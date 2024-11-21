@@ -38,8 +38,8 @@ git checkout -b <branch-name> main
 ## Opening a pull request
 1. Pull the most recent `main` branch
 ```
-git checkout main && git fetch
-git checkout <branch-name> && git pull
+git checkout main && git pull
+git checkout <branch-name> && git pull origin main
 ```
 2. Stage and commit files
 ```
@@ -48,7 +48,7 @@ git add <files-to-add>
 git commit -m 'commit message'
 git push -u origin <branch-name>
 ```
-- In future commits, you will only need to use `git push`
+- In future commits, you will only need to use `git push` or `git push origin HEAD`
 - You should receive a Github link to open the PR
    - Set `base: main`
    - Set `compare: <branch-name>`
