@@ -38,10 +38,12 @@ git branch --set-upstream-to=origin/main <branch-name>
 
 ## Opening a pull request
 ```
+git checkout main && git fetch
+git checkout <branch-name> && git pull
 git status
 git add <files-to-add>
 git commit -m 'commit message'
-git push -u origin <branch-name>
+git push origin HEAD
 ```
 - In future commits, you will only need to use `git push`
 - You should receive a Github link to open the PR
