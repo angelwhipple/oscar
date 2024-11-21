@@ -32,18 +32,21 @@ Navigate to `http://localhost:5173` (or whatever port the client server shows in
 ```
 git checkout main
 git fetch origin && git pull
-git checkout -b <branch-name>
-git branch --set-upstream-to=origin/main <branch-name>
+git checkout -b <branch-name> main
 ```
 
 ## Opening a pull request
+1. Pull the most recent `main` branch
 ```
 git checkout main && git fetch
 git checkout <branch-name> && git pull
+```
+2. Stage and commit files
+```
 git status
 git add <files-to-add>
 git commit -m 'commit message'
-git push origin HEAD
+git push -u origin <branch-name>
 ```
 - In future commits, you will only need to use `git push`
 - You should receive a Github link to open the PR
