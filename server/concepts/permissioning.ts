@@ -10,9 +10,9 @@ export default class PermissioningConcept {
   public readonly organizers: DocCollection<PermissionDoc>;
   public readonly members: DocCollection<PermissionDoc>;
 
-  constructor(collectionName: string) {
-    this.organizers = new DocCollection<PermissionDoc>(collectionName);
-    this.members = new DocCollection<PermissionDoc>(collectionName);
+  constructor(collectionName1: string, collectionName2: string) {
+    this.organizers = new DocCollection<PermissionDoc>(collectionName1);
+    this.members = new DocCollection<PermissionDoc>(collectionName2);
   }
 
   async addMember(u: ObjectId) {
@@ -33,6 +33,11 @@ export default class PermissioningConcept {
     return { msg: "Member successfully created!", organizer: await this.organizers.readOne({ _id }) };
   }
 
+  async removeOrganizerPrivileges(u: ObjectId) {
+    await this.organizers.deleteOne({ user: u }); //not removing from member, cause they can still be a member!
+    return { msg: "Successfully removed organizer privileges!" };
+  }
+
   async assertUserIsOrganizer(u: ObjectId) {
     const _id = await this.organizers.readOne({ user: u });
 
@@ -40,9 +45,5 @@ export default class PermissioningConcept {
       //if users is not an organizer,
       throw new NotFoundError(`User ${_id} is not an organizer!`);
     }
-  }
-  async removeOrganizerPrivileges(u: ObjectId) {
-    await this.organizers.deleteOne({ user: u }); //not removing from member, cause they can still be a member!
-    return { msg: "Successfully removed organizer privileges!" };
   }
 }

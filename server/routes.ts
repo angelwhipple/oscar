@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Posting, Sessioning } from "./app";
+import { Authing, Friending, Permissioning, Posting, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -69,7 +69,20 @@ class Routes {
     Sessioning.end(session);
     return { msg: "Logged out!" };
   }
+  /// NEW ROUTES ///
+  @Router.post("/permissions/member")
+  async createMember(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Permissioning.addMember(user);
+  }
 
+  @Router.post("/permissions/organizer")
+  async createOrganizer(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Permissioning.addOrganizer(user);
+  }
+
+  ///// NEW ROUTES ////
   @Router.get("/posts")
   @Router.validate(z.object({ author: z.string().optional() }))
   async getPosts(author?: string) {
