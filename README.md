@@ -30,8 +30,7 @@ Navigate to `http://localhost:5173` (or whatever port the client server shows in
 
 ## Creating a branch
 ```
-git checkout main
-git fetch origin && git pull
+git checkout main && git pull
 git checkout -b <branch-name> main
 ```
 
@@ -52,9 +51,10 @@ git push -u origin <branch-name>
 - You should receive a Github link to open the PR
    - Set `base: main`
    - Set `compare: <branch-name>`
+   - `Rebase and merge` when checks pass
 
 ## Approvals
-Before your branch is merged with main, get 1 approval from a teammate
+Before merging your branch with main, get 1 approval from a teammate
 
 ## Vercel
 [Oscar](https://oscar-kappa.vercel.app/)
