@@ -13,6 +13,8 @@ import {
   ReplaceOptions,
   UpdateResult,
   WithoutId,
+  PullOperator,
+  PushOperator,
 } from "mongodb";
 
 import db from "../db";
@@ -150,7 +152,11 @@ export default class DocCollection<Schema extends BaseDoc> {
     return one;
   }
 
-  /*
-   * You may wish to add more methods, e.g. using other MongoDB operations!
-   */
+  async extendArray(filter: Filter<Schema>, push: PushOperator<Schema>) {
+    return await this.collection.findOneAndUpdate(filter, { $addToSet: push });
+  }
+
+  async pullFromArray(filter: Filter<Schema>, pull: PullOperator<Schema>) {
+    return await this.collection.findOneAndUpdate(filter, { $pull: pull });
+  }
 }
