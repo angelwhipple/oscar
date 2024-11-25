@@ -53,6 +53,27 @@ export const useUserStore = defineStore(
       resetStore();
     };
 
+    // permissioning
+    const addMember = async () => {
+      try {
+        const response = await fetchy("/api/permissions/member", "POST");
+        return response;
+      } catch (error) {
+        console.error("Error adding member:", error);
+        throw new Error("Failed to add member");
+      }
+    };
+
+    const addOrganizer = async () => {
+      try {
+        const response = await fetchy("/api/permissions/organizer", "POST");
+        return response;
+      } catch (error) {
+        console.error("Error adding organizer:", error);
+        throw new Error("Failed to add organizer");
+      }
+    };
+
     return {
       currentUsername,
       isLoggedIn,
@@ -63,6 +84,8 @@ export const useUserStore = defineStore(
       updateUserUsername,
       updateUserPassword,
       deleteUser,
+      addMember,
+      addOrganizer,
     };
   },
   { persist: true },

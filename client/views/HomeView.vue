@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PostListComponent from "@/components/Post/PostListComponent.vue";
+import PermissionForm from "@/components/Permission/PermissionOptions.vue"; // Import PermissionForm
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 
@@ -13,12 +13,18 @@ const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
       <h1 v-if="isLoggedIn">Welcome {{ currentUsername }}!</h1>
       <h1 v-else>Please login!</h1>
     </section>
-    <PostListComponent />
+    <section v-if="isLoggedIn">
+      <PermissionForm />
+    </section>
   </main>
 </template>
 
 <style scoped>
 h1 {
   text-align: center;
+}
+
+section {
+  margin: 1rem 0;
 }
 </style>
