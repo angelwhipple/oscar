@@ -3,6 +3,13 @@ import PostListComponent from "@/components/Post/PostListComponent.vue";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 
+import ScheduleListComponent from "@/components/Scheduling/CreateScheduleForm.vue";
+import { ref } from "vue";
+
+const refreshSchedules = ref(false);
+const handleRefreshSchedules = () => {
+  refreshSchedules.value = !refreshSchedules.value;
+};
 const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
 </script>
 
@@ -14,6 +21,8 @@ const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
       <h1 v-else>Please login!</h1>
     </section>
     <PostListComponent />
+    <!-- <ScheduleListComponent v-if="refreshSchedules" /> -->
+    <ScheduleListComponent />
   </main>
 </template>
 

@@ -7,6 +7,8 @@ import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
 import SettingView from "../views/SettingView.vue";
 
+import ScheduleDetailComponent from "@/components/Scheduling/ScheduleDetailComponent.vue";
+
 const router = createRouter({
   history: createWebHistory(),
   routes: [
@@ -38,6 +40,8 @@ const router = createRouter({
       name: "not-found",
       component: NotFoundView,
     },
+
+    { path: "/schedules/:id", name: "ScheduleDetail", component: ScheduleDetailComponent },
   ],
 });
 
