@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Posting, Sessioning, Scheduling, Grouping } from "./app";
+import { Authing, Friending, Grouping, Posting, Scheduling, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -73,7 +73,6 @@ class Routes {
     Sessioning.end(session);
     return { msg: "Logged out!" };
   }
-
 
   /**
    * POSTS
@@ -169,6 +168,10 @@ class Routes {
   /**
    * GROUPS
    */
+  @Router.get("/groups")
+  async getAllGroups() {
+    return await Grouping.getAllGroups();
+  }
 
   @Router.post("/groups")
   async createGroup(session: SessionDoc, name: string, duration: string, freq: string, amt: string) {
@@ -193,14 +196,14 @@ class Routes {
   async makeContribution(session: SessionDoc, id: string, amount: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    return await Grouping.contribute(oid, user, Number(amount))
+    return await Grouping.contribute(oid, user, Number(amount));
   }
 
   @Router.patch("/groups/transactions/withdraw/:id")
   async makeWithdrawal(session: SessionDoc, id: string, amount: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    return await Grouping.withdraw(oid, user, Number(amount))
+    return await Grouping.withdraw(oid, user, Number(amount));
   }
 
   @Router.patch("/groups/members/add/:id")
@@ -214,7 +217,7 @@ class Routes {
   async removeMember(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    return await Grouping.removeMember(oid, user)
+    return await Grouping.removeMember(oid, user);
   }
 
   @Router.patch("/groups/reset/:id")
@@ -235,12 +238,28 @@ class Routes {
    * MEETINGS
    */
 
+  // @Router.post("/meetings")
+  // async createMeetingScheduler(session: SessionDoc, group: string, dateFrom: string, dateTo: string) {
+  //   const user = Sessioning.getUser(session);
+  //   const groupId = new ObjectId(group);
+  //   const groupMembers = await Grouping.getMembers(groupId)
+  //   return await Scheduling.create(user, new Date(dateFrom), new Date(dateTo), groupMembers);
+  // }
   @Router.post("/meetings")
-  async createMeetingScheduler(session: SessionDoc, group: string, dateFrom: string, dateTo: string) {
+  async createMeetingScheduler(session: SessionDoc, group: string, dateFrom: string, dateTo: string, invitees: string[]) {
     const user = Sessioning.getUser(session);
     const groupId = new ObjectId(group);
-    const groupMembers = await Grouping.getMembers(groupId)
-    return await Scheduling.create(user, new Date(dateFrom), new Date(dateTo), groupMembers);
+    const groupMembers = await Grouping.getMembers(groupId);
+
+    // Convert invitee usernames to ObjectId
+    const inviteeIds = await Promise.all(
+      invitees.map(async (username) => {
+        const invitee = await Authing.getUserByUsername(username);
+        return invitee._id;
+      }),
+    );
+
+    return await Scheduling.create(user, new Date(dateFrom), new Date(dateTo), inviteeIds);
   }
 
   @Router.get("/meetings/:id")
@@ -253,27 +272,27 @@ class Routes {
   async addMeetingAvailability(session: SessionDoc, id: string, date: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    return await Scheduling.addUserAvailability(oid, user, [new Date(date),]);
+    return await Scheduling.addUserAvailability(oid, user, [new Date(date)]);
   }
 
   @Router.put("/meetings/unavailable/:id")
   async removeMeetingAvailability(session: SessionDoc, id: string, date: string) {
     const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id)
-    return await Scheduling.removeUserAvailability(oid, user, [new Date(date),]);
+    const oid = new ObjectId(id);
+    return await Scheduling.removeUserAvailability(oid, user, [new Date(date)]);
   }
 
   @Router.get("/meetings/schedule/:id")
   async scheduleMeeting(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id)
+    const oid = new ObjectId(id);
     return await Scheduling.chooseMeetingDate(oid, user);
   }
 
   @Router.delete("/meetings/:id")
   async deleteMeetingScheduler(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id)
+    const oid = new ObjectId(id);
     return await Scheduling.delete(oid, user);
   }
 }

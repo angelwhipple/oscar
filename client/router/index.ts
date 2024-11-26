@@ -41,7 +41,12 @@ const router = createRouter({
       component: NotFoundView,
     },
 
-    { path: "/schedules/:id", name: "ScheduleDetail", component: ScheduleDetailComponent },
+    {
+      path: "/schedules/:id",
+      name: "ScheduleDetail",
+      component: ScheduleDetailComponent,
+      props: true,
+    },
   ],
 });
 

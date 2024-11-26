@@ -5,7 +5,7 @@ import { fetchy } from "../../utils/fetchy";
 const schedules = ref([]);
 
 const fetchSchedules = async () => {
-  schedules.value = await fetchy("/api/schedules", "GET");
+  schedules.value = await fetchy("/api/meetings", "GET");
 };
 
 onMounted(fetchSchedules);

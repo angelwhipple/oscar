@@ -69,18 +69,16 @@ const invitees = ref("");
 const emit = defineEmits(["refreshSchedules"]);
 
 const createSchedule = async () => {
-  const inviteeList = invitees.value.split(",").map((id) => id.trim());
-  const body = JSON.stringify({
-    organizer: organizer.value,
-    startDate: startDate.value,
-    endDate: endDate.value,
-    invitees: inviteeList,
-  });
+  const inviteeList = invitees.value.split(",").map((username) => username.trim());
 
   try {
-    await fetchy("/api/schedules", "POST", {
-      headers: { "Content-Type": "application/json" },
-      body: body,
+    await fetchy("/api/meetings", "POST", {
+      body: {
+        organizer: organizer.value,
+        startDate: startDate.value,
+        endDate: endDate.value,
+        invitees: inviteeList,
+      },
     });
     emit("refreshSchedules");
     emptyForm();
@@ -105,7 +103,7 @@ const emptyForm = () => {
     <input id="startDate" type="date" v-model="startDate" required />
     <label for="endDate">End Date:</label>
     <input id="endDate" type="date" v-model="endDate" required />
-    <label for="invitees">Invitees (comma-separated IDs):</label>
+    <label for="invitees">Invitees (comma-separated usernames):</label>
     <input id="invitees" v-model="invitees" required />
     <button type="submit" class="pure-button-primary pure-button">Create Schedule</button>
   </form>
