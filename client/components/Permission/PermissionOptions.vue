@@ -1,59 +1,51 @@
 <script setup lang="ts">
-import { useUserStore } from "@/stores/user";
 import { ref } from "vue";
 
-const selectedPermission = ref(""); // Tracks user selection
-const userStore = useUserStore(); // Get the store instance
-const { addMember, addOrganizer } = userStore; // Get the methods from the store
+const selectedPermission = ref("");
 
-async function handleSubmit() {
-  try {
-    if (selectedPermission.value === "organizer") {
-      await addOrganizer(); // Call the store method
-      alert("You are now an organizer!");
-    } else if (selectedPermission.value === "member") {
-      await addMember(); // Call the store method
-      alert("You are now a member!");
-    } else {
-      alert("Please select an option.");
-    }
-  } catch (error) {
-    console.error("Error handling permission:", error);
-    alert("Failed to update permissions.");
-  }
+function selectPermission(permission: string) {
+  selectedPermission.value = permission;
+  alert(`You selected: ${permission}`);
 }
 </script>
 
 <template>
-  <form class="pure-form pure-form-aligned" @submit.prevent="handleSubmit">
+  <div class="permission-form">
     <h3>What would you like to do?</h3>
-    <fieldset>
-      <div class="pure-control-group">
-        <label for="organizer">
-          <input type="radio" id="organizer" value="organizer" v-model="selectedPermission" />
-          Organize a ROSCA group
-        </label>
-      </div>
-      <div class="pure-control-group">
-        <label for="member">
-          <input type="radio" id="member" value="member" v-model="selectedPermission" />
-          Join a ROSCA group as a member
-        </label>
-      </div>
-      <div class="pure-controls">
-        <button type="submit" class="pure-button pure-button-primary">Submit</button>
-      </div>
-    </fieldset>
-  </form>
+    <div class="button-container">
+      <button class="permission-button organizer" @click="selectPermission('organizer')">Organize a ROSCA Group</button>
+      <button class="permission-button member" @click="selectPermission('member')">Join a ROSCA group as a Member</button>
+    </div>
+  </div>
 </template>
 
 <style scoped>
-h3 {
+.permission-form {
   text-align: center;
-  margin-bottom: 1rem;
 }
 
-.pure-control-group {
-  margin-bottom: 1rem;
+.button-container {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.permission-button {
+  width: 200px;
+  height: 100px;
+  word-wrap: break-word;
+  padding: 1rem 2rem;
+  font-size: 1.2rem;
+}
+
+.organizer {
+  background-color: #262771;
+  color: white;
+}
+
+.member {
+  background-color: #9393b8;
+  color: black;
 }
 </style>
