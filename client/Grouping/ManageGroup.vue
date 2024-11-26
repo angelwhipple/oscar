@@ -53,32 +53,17 @@ const withdraw = async () => {
   }
 };
 
-// const removeMember = async (memberId: string) => {
-//   try {
-//     if (!props.group) return;
-//     console.log(`Removing member: ${memberId} from group: ${props.group._id}`);
-//     console.log(`Removing member: ${memberId} from group: ${props.group._id}`);
-
-//     await fetchy(`/api/groups/members/remove/:${props.group._id}`, "PATCH", {
-//       body: { username: props.group.username },
-//     });
-//     emit("group-updated");
-//   } catch (e) {
-//     console.error("error removing member:", e);
-//   }
-
 const removeMember = async (memberId: string) => {
   try {
     if (!props.group) return;
     console.log(`Removing member: ${memberId} from group: ${props.group._id}`);
 
     await fetchy(`/api/groups/members/remove/${props.group._id}`, "PATCH", {
-      body: { username: memberId }, // Assumption: memberId is actually the username
+      body: { username: memberId },
     });
     emit("group-updated");
-    console.log(`Member removed from group: ${props.group._id}`);
   } catch (e) {
-    console.error("Error removing member:", e);
+    console.error("error removing member:", e);
   }
 };
 </script>

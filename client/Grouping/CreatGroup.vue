@@ -1,65 +1,6 @@
-<!-- <script setup lang="ts">
-import { fetchy } from "@/utils/fetchy";
-import { defineEmits, ref } from "vue";
-
-const groupName = ref("");
-const duration = ref("");
-const frequency = ref("");
-const contribution = ref("");
-
-const emit = defineEmits(["group-created"]);
-
-const createGroup = async () => {
-  try {
-    await fetchy("/api/groups", "POST", {
-      body: {
-        name: groupName.value,
-        duration: duration.value,
-        freq: frequency.value,
-        amt: contribution.value,
-      },
-    });
-    groupName.value = "";
-    duration.value = "";
-    frequency.value = "";
-    contribution.value = "";
-    // Emit event to parent to fetch updated groups
-    emit("group-created");
-  } catch (e) {
-    console.error("error creating group:", e);
-  }
-};
-</script>
-
-<template>
-  <div>
-    <h2>Create Group</h2>
-    <form @submit.prevent="createGroup">
-      <label for="groupName">Group Name:</label>
-      <input id="groupName" v-model="groupName" required />
-      <label for="duration">Cycle Duration (weeks):</label>
-      <input id="duration" type="number" v-model="duration" required />
-      <label for="frequency">Contribution Frequency (weeks):</label>
-      <input id="frequency" type="number" v-model="frequency" required />
-      <label for="contribution">Contribution Amount:</label>
-      <input id="contribution" type="number" v-model="contribution" required />
-      <button type="submit" class="pure-button-primary pure-button">Create Group</button>
-    </form>
-  </div>
-</template>
-
-<style scoped>
-form {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5em;
-}
-</style> -->
-
 <script setup lang="ts">
 import { fetchy } from "@/utils/fetchy";
 import { defineEmits, ref } from "vue";
-import AddMembers from "./AddMembers.vue";
 
 const groupName = ref("");
 const rules = ref("");
@@ -68,7 +9,7 @@ const frequency = ref("");
 const totalPot = ref("");
 const inviteMembers = ref<string[]>([]);
 
-const emit = defineEmits(["group-created"]);
+const emit = defineEmits(["group-created", "cancel"]);
 
 const createGroup = async () => {
   try {
@@ -125,15 +66,15 @@ const createGroup = async () => {
         <input id="totalPot" type="number" v-model="totalPot" required class="input-field" />
       </div>
 
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label>Invite members</label>
         <div v-for="(member, index) in inviteMembers" :key="index" class="invite-member">
           <input type="text" v-model="inviteMembers[index]" placeholder="Search by username" class="input-field" />
           <button type="button" @click="inviteMembers.splice(index, 1)" class="remove-button">Remove</button>
         </div>
-        <!-- <button type="button" @click="inviteMembers.push('')" class="add-user-button">Add User</button> -->
+        <button type="button" @click="inviteMembers.push('')" class="add-user-button">Add User</button>
         <AddMembers @member-added="inviteMembers.push($event)" />
-      </div>
+      </div> -->
 
       <div class="form-actions">
         <button type="submit" class="create-button">Create Group</button>
