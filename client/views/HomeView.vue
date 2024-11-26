@@ -4,6 +4,9 @@ import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 
 import GroupManagement from "@/Grouping/GroupManagement.vue";
+// import CreateGroup from "@/Grouping/CreatGroup.vue";
+// import GroupDetail from "@/Grouping/GroupDetail.vue";
+// import GroupList from "@/Grouping/GroupList.vue";
 
 // const refreshSchedules = ref(false);
 // const handleRefreshSchedules = () => {
@@ -20,8 +23,7 @@ const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
       <h1 v-else>Please login!</h1>
     </section>
     <PostListComponent />
-    <!-- <ScheduleListComponent v-if="refreshSchedules" /> -->
-    <!-- <ScheduleListComponent /> -->
+
     <GroupManagement />
   </main>
 </template>

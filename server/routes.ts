@@ -168,6 +168,72 @@ class Routes {
   /**
    * GROUPS
    */
+  // @Router.get("/groups")
+  // async getAllGroups() {
+  //   return await Grouping.getAllGroups();
+  // }
+
+  // @Router.post("/groups")
+  // async createGroup(session: SessionDoc, name: string, duration: string, freq: string, amt: string) {
+  //   const user = Sessioning.getUser(session);
+  //   // await Permissioning.assertUserIsOrganizer(user);
+  //   return await Grouping.create(name, user, Number(duration), Number(freq), Number(amt));
+  // }
+
+  // @Router.get("/groups/:id")
+  // async fetchGroup(session: SessionDoc, id: string) {
+  //   const oid = new ObjectId(id);
+  //   return await Grouping.getGroupById(oid);
+  // }
+
+  // @Router.get("/groups/transactions/:id")
+  // async getTransactionHistory(session: SessionDoc, id: string) {
+  //   const oid = new ObjectId(id);
+  //   return await Grouping.getGroupTransactions(oid);
+  // }
+
+  // @Router.patch("/groups/transactions/contribute/:id")
+  // async makeContribution(session: SessionDoc, id: string, amount: string) {
+  //   const user = Sessioning.getUser(session);
+  //   const oid = new ObjectId(id);
+  //   return await Grouping.contribute(oid, user, Number(amount));
+  // }
+
+  // @Router.patch("/groups/transactions/withdraw/:id")
+  // async makeWithdrawal(session: SessionDoc, id: string, amount: string) {
+  //   const user = Sessioning.getUser(session);
+  //   const oid = new ObjectId(id);
+  //   return await Grouping.withdraw(oid, user, Number(amount));
+  // }
+
+  // @Router.patch("/groups/members/add/:id")
+  // async addMember(session: SessionDoc, id: string) {
+  //   const user = Sessioning.getUser(session);
+  //   const oid = new ObjectId(id);
+  //   return await Grouping.addMember(oid, user);
+  // }
+
+  // @Router.patch("/groups/members/remove/:id")
+  // async removeMember(session: SessionDoc, id: string) {
+  //   const user = Sessioning.getUser(session);
+  //   const oid = new ObjectId(id);
+  //   return await Grouping.removeMember(oid, user);
+  // }
+
+  // @Router.patch("/groups/reset/:id")
+  // async resetCycle(session: SessionDoc, id: string) {
+  //   const user = Sessioning.getUser(session);
+  //   const oid = new ObjectId(id);
+  //   return await Grouping.resetCycle(oid, user);
+  // }
+
+  // @Router.delete("/groups/:id")
+  // async disbandGroup(session: SessionDoc, id: string) {
+  //   const user = Sessioning.getUser(session);
+  //   const oid = new ObjectId(id);
+  //   return await Grouping.disband(oid, user);
+  // }
+
   @Router.get("/groups")
   async getAllGroups() {
     return await Grouping.getAllGroups();
@@ -176,7 +242,6 @@ class Routes {
   @Router.post("/groups")
   async createGroup(session: SessionDoc, name: string, duration: string, freq: string, amt: string) {
     const user = Sessioning.getUser(session);
-    // await Permissioning.assertUserIsOrganizer(user);
     return await Grouping.create(name, user, Number(duration), Number(freq), Number(amt));
   }
 
@@ -184,6 +249,20 @@ class Routes {
   async fetchGroup(session: SessionDoc, id: string) {
     const oid = new ObjectId(id);
     return await Grouping.getGroupById(oid);
+  }
+
+  @Router.get("/groups/organizer/:username")
+  @Router.validate(z.object({ username: z.string().min(1) }))
+  async getGroupsByOrganizer(username: string) {
+    const organizer = (await Authing.getUserByUsername(username))._id;
+    return await Grouping.getGroupsByOrganizer(organizer);
+  }
+
+  @Router.patch("/groups/rename/:id")
+  async renameGroup(session: SessionDoc, id: string, name: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    return await Grouping.rename(oid, user, name);
   }
 
   @Router.get("/groups/transactions/:id")
@@ -207,17 +286,33 @@ class Routes {
   }
 
   @Router.patch("/groups/members/add/:id")
-  async addMember(session: SessionDoc, id: string) {
-    const user = Sessioning.getUser(session);
+  async addMember(session: SessionDoc, id: string, username: string) {
+    const user = (await Authing.getUserByUsername(username))._id;
     const oid = new ObjectId(id);
     return await Grouping.addMember(oid, user);
   }
 
   @Router.patch("/groups/members/remove/:id")
-  async removeMember(session: SessionDoc, id: string) {
-    const user = Sessioning.getUser(session);
+  async removeMember(session: SessionDoc, id: string, username: string) {
+    const user = (await Authing.getUserByUsername(username))._id;
     const oid = new ObjectId(id);
     return await Grouping.removeMember(oid, user);
+  }
+
+  @Router.patch("/groups/members/addMany/:id")
+  async addManyMembers(session: SessionDoc, id: string, usernames: string[]) {
+    const owner = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    const users = await Promise.all(usernames.map(async (username) => (await Authing.getUserByUsername(username))._id));
+    return await Grouping.addManyMembers(oid, owner, users);
+  }
+
+  @Router.patch("/groups/members/removeMany/:id")
+  async removeManyMembers(session: SessionDoc, id: string, usernames: string[]) {
+    const owner = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    const members = await Promise.all(usernames.map(async (username) => (await Authing.getUserByUsername(username))._id));
+    return await Grouping.removeManyMembers(oid, owner, members);
   }
 
   @Router.patch("/groups/reset/:id")

@@ -7,7 +7,11 @@ import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
 import SettingView from "../views/SettingView.vue";
 
-import ScheduleDetailComponent from "@/components/Scheduling/ScheduleDetailComponent.vue";
+// import ScheduleDetailComponent from "@/components/Scheduling/ScheduleDetailComponent.vue";
+import CreateGroup from "@/Grouping/CreatGroup.vue";
+// import GroupDetail from "@/Grouping/GroupDetail.vue";
+import GroupList from "@/Grouping/GroupList.vue";
+import ManageGroup from "@/Grouping/ManageGroup.vue";
 
 const router = createRouter({
   history: createWebHistory(),
@@ -40,13 +44,35 @@ const router = createRouter({
       name: "not-found",
       component: NotFoundView,
     },
+    {
+      path: "/groups/create",
+      name: "CreateGroup",
+      component: CreateGroup,
+    },
+    {
+      path: "/groups",
+      name: "GroupList",
+      component: GroupList,
+    },
+    // {
+    //   path: "/groups/:id",
+    //   name: "GroupDetail",
+    //   component: GroupDetail,
+    //   props: true,
+    // },
 
     {
-      path: "/schedules/:id",
-      name: "ScheduleDetail",
-      component: ScheduleDetailComponent,
+      path: "/groups/manage/:id",
+      name: "ManageGroup",
+      component: ManageGroup,
       props: true,
     },
+    // {
+    //   path: "/schedules/:id",
+    //   name: "ScheduleDetail",
+    //   component: ScheduleDetailComponent,
+    //   props: true,
+    // },
   ],
 });
 
