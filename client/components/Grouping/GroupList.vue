@@ -20,65 +20,52 @@ const selectGroup = (group: Group) => {
 <template>
   <div class="group-list-container">
     <h2>Groups</h2>
-    <ul class="group-list">
-      <li v-for="group in groups" :key="group._id" @click="selectGroup(group)" class="group-item">
-        <div class="group-details">
-          <span class="group-name">{{ group.name }}</span>
-          <span class="group-organizer">(Organizer: {{ group.organizer }})</span>
-        </div>
-      </li>
-    </ul>
+    <div class="group-list">
+      <div v-for="group in groups" :key="group._id" class="group-item" @click="selectGroup(group)">
+        <span class="group-name">{{ group.name }}</span>
+      </div>
+    </div>
   </div>
 </template>
 
 <style scoped>
 .group-list-container {
-  max-width: 600px;
-  margin: 0 auto;
+  text-align: center;
   padding: 2em;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
-  background-color: #ffffff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .group-list {
-  list-style-type: none;
-  padding: 0;
-  margin: 0;
+  display: flex;
+  justify-content: center;
+  gap: 2em;
+  flex-wrap: wrap;
+  margin: 2em 0;
 }
 
 .group-item {
-  cursor: pointer;
-  margin: 0.75em 0;
-  padding: 1em;
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  transition:
-    background-color 0.3s ease,
-    box-shadow 0.3s ease;
+  width: 120px;
+  height: 120px;
+  background-color: #7d7da1; /* Matches the purple color in the image */
+  border-radius: 50%;
   display: flex;
   align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: white;
+  font-size: 0.9rem;
+  font-weight: bold;
+  transition:
+    transform 0.3s ease,
+    background-color 0.3s ease;
 }
 
 .group-item:hover {
-  background-color: #f9f9f9;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.group-details {
-  display: flex;
-  flex-direction: column;
+  background-color: #6b6b8a; /* Slightly darker purple for hover effect */
+  transform: scale(1.1);
 }
 
 .group-name {
-  font-weight: bold;
-  font-size: 1.1rem;
-}
-
-.group-organizer {
-  font-size: 0.9rem;
-  color: #6c757d;
-  margin-top: 0.25em;
+  text-align: center;
+  line-height: 1.2em;
 }
 </style>
