@@ -73,7 +73,11 @@ class Routes {
     Sessioning.end(session);
     return { msg: "Logged out!" };
   }
-  /// NEW ROUTES ///
+
+  /**
+   * PERMISSIONING
+   */
+
   @Router.post("/permissions/member")
   async createMember(session: SessionDoc) {
     const user = Sessioning.getUser(session);
@@ -83,7 +87,8 @@ class Routes {
   @Router.post("/permissions/organizer")
   async createOrganizer(session: SessionDoc) {
     const user = Sessioning.getUser(session);
-    return await Permissioning.addOrganizer(user);
+    await Permissioning.addMember(user);
+    return await Permissioning.addOrganizerPrivileges(user);
   }
 
   /**

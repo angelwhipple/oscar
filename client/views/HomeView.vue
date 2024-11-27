@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import PermissionForm from "@/components/Permission/PermissionOptions.vue";
-import GroupManagement from "@/components/Grouping/GroupManagement.vue";
-import PostListComponent from "@/components/Post/PostListComponent.vue";
+import PermissionForm from "@/components/Permission/PermissionForm.vue";
+import GroupView from "@/views/GroupView.vue";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 
@@ -17,10 +16,10 @@ const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
     </section>
     <section v-if="isLoggedIn">
       <PermissionForm />
+      <GroupView />
     </section>
   </main>
 
-  <GroupManagement />
 </template>
 
 <style scoped>

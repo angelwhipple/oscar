@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts">
-import PermissionOptions from "@/components/Permission/PermissionOptions.vue";
+import PermissionOptions from "@/components/Permission/PermissionForm.vue";
 import { useUserStore } from "@/stores/user";
 import { computed, defineComponent } from "vue";
 
