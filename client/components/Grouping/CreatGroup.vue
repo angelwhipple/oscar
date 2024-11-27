@@ -3,11 +3,13 @@ import { fetchy } from "@/utils/fetchy";
 import { defineEmits, ref } from "vue";
 
 const groupName = ref("");
-const rules = ref("");
-const capacity = ref("");
+// const rules = ref("");
+// const capacity = ref("");
+const duration = ref("");
 const frequency = ref("");
 const totalPot = ref("");
-const inviteMembers = ref<string[]>([]);
+// const inviteMembers = ref<string[]>([]);
+// async createGroup(session: SessionDoc, name: string, duration: string, freq: string, amt: string) {
 
 const emit = defineEmits(["group-created", "cancel"]);
 
@@ -16,19 +18,19 @@ const createGroup = async () => {
     await fetchy("/api/groups", "POST", {
       body: {
         name: groupName.value,
-        rules: rules.value,
-        capacity: capacity.value,
-        frequency: frequency.value,
-        totalPot: totalPot.value,
-        invitees: inviteMembers.value,
+        // rules: rules.value,
+        duration: duration.value,
+        freq: frequency.value,
+        amt: totalPot.value,
+        // invitees: inviteMembers.value,
       },
     });
     groupName.value = "";
-    rules.value = "";
-    capacity.value = "";
+    // rules.value = "";
+    duration.value = "";
     frequency.value = "";
     totalPot.value = "";
-    inviteMembers.value = [];
+    // inviteMembers.value = [];
     // Emit event to parent to fetch updated groups
     emit("group-created");
   } catch (e) {
@@ -38,11 +40,11 @@ const createGroup = async () => {
 
 const cancelGroup = () => {
   groupName.value = "";
-  rules.value = "";
-  capacity.value = "";
+  // rules.value = "";
+  duration.value = "";
   frequency.value = "";
   totalPot.value = "";
-  inviteMembers.value = [];
+  // inviteMembers.value = [];
   emit("cancel");
 };
 </script>
@@ -56,14 +58,14 @@ const cancelGroup = () => {
         <input id="groupName" v-model="groupName" required class="input-field" />
       </div>
 
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label for="rules">Rules and Regulations:</label>
         <textarea id="rules" v-model="rules" class="textarea-field"></textarea>
-      </div>
+      </div> -->
 
       <div class="form-group">
-        <label for="capacity">Capacity of Group:</label>
-        <input id="capacity" type="number" v-model="capacity" required class="input-field" />
+        <label for="capacity">Duration:</label>
+        <input id="capacity" type="number" v-model="duration" required class="input-field" />
       </div>
 
       <div class="form-group">
@@ -72,7 +74,7 @@ const cancelGroup = () => {
       </div>
 
       <div class="form-group">
-        <label for="totalPot">Size of Total Pot:</label>
+        <label for="totalPot">Amount of Total Pot:</label>
         <input id="totalPot" type="number" v-model="totalPot" required class="input-field" />
       </div>
 
