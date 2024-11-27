@@ -10,7 +10,7 @@ export interface TransactionDoc extends BaseDoc {
 
 export interface GroupDoc extends BaseDoc {
   name: string;
-  rules: string
+  rules: string;
   organizer: ObjectId;
   members: ObjectId[];
   value: number;
