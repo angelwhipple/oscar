@@ -36,7 +36,7 @@ export default class GroupingConcept {
     await this.assertNewGroup(name);
     const _id = await this.groups.createOne({
       name,
-      string,
+      rules,
       organizer,
       members: [organizer],
       value: 0,
