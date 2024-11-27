@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import PermissionForm from "@/components/Permission/PermissionOptions.vue"; // Import PermissionForm
+import PermissionForm from "@/components/Permission/PermissionOptions.vue";
+import GroupManagement from "@/components/Grouping/GroupManagement.vue";
+import PostListComponent from "@/components/Post/PostListComponent.vue";
 import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 
@@ -17,6 +19,8 @@ const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
       <PermissionForm />
     </section>
   </main>
+
+  <GroupManagement />
 </template>
 
 <style scoped>
