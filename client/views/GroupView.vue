@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { fetchy } from "@/utils/fetchy";
 import { onMounted, ref } from "vue";
-import CreateGroup from "./CreateGroup.vue";
-import FetchGroupsByOrganizer from "./FetchGroupByOrganizer.vue";
-import GroupList from "./GroupList.vue";
-import ManageGroup from "./ManageGroup.vue";
+import CreateGroup from "../components/Grouping/CreateGroup.vue";
+import FetchGroupsByOrganizer from "../components/Grouping/FetchGroupByOrganizer.vue";
+import GroupList from "../components/Grouping/GroupList.vue";
+import ManageGroup from "../components/Grouping/ManageGroup.vue";
 
 interface Group {
   _id: string;

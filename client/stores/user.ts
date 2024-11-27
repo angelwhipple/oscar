@@ -53,7 +53,7 @@ export const useUserStore = defineStore(
       resetStore();
     };
 
-    // permissioning
+    // Permissioning
     const addMember = async () => {
       try {
         const response = await fetchy("/api/permissions/member", "POST");
