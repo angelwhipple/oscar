@@ -35,6 +35,16 @@ const createGroup = async () => {
     console.error("error creating group:", e);
   }
 };
+
+const cancelGroup = () => {
+  groupName.value = "";
+  rules.value = "";
+  capacity.value = "";
+  frequency.value = "";
+  totalPot.value = "";
+  inviteMembers.value = [];
+  emit("cancel");
+};
 </script>
 
 <template>
@@ -66,19 +76,9 @@ const createGroup = async () => {
         <input id="totalPot" type="number" v-model="totalPot" required class="input-field" />
       </div>
 
-      <!-- <div class="form-group">
-        <label>Invite members</label>
-        <div v-for="(member, index) in inviteMembers" :key="index" class="invite-member">
-          <input type="text" v-model="inviteMembers[index]" placeholder="Search by username" class="input-field" />
-          <button type="button" @click="inviteMembers.splice(index, 1)" class="remove-button">Remove</button>
-        </div>
-        <button type="button" @click="inviteMembers.push('')" class="add-user-button">Add User</button>
-        <AddMembers @member-added="inviteMembers.push($event)" />
-      </div> -->
-
       <div class="form-actions">
         <button type="submit" class="create-button">Create Group</button>
-        <button type="button" @click="$emit('cancel')" class="cancel-button">Cancel</button>
+        <button type="button" @click="cancelGroup()" class="cancel-button">Cancel</button>
       </div>
     </form>
   </div>

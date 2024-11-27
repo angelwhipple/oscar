@@ -18,7 +18,7 @@ const selectedGroup = ref<Group | null>(null);
 
 const fetchGroups = async () => {
   try {
-    groups.value = await fetchy("/api/groups", "GET");
+    groups.value = await fetchy("/api/allgroups", "GET");
   } catch (e) {
     console.error("error fetching groups:", e);
   }

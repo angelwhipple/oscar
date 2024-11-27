@@ -53,19 +53,18 @@ const withdraw = async () => {
   }
 };
 
-const removeMember = async (memberId: string) => {
-  try {
-    if (!props.group) return;
-    console.log(`Removing member: ${memberId} from group: ${props.group._id}`);
+// const removeMember = async (memberId: string) => {
+//   try {
+//     if (!props.group) return;
+//     console.log(`Removing member: ${memberId} from group: ${props.group._id}`);
 
-    await fetchy(`/api/groups/members/remove/${props.group._id}`, "PATCH", {
-      body: { username: memberId },
-    });
-    emit("group-updated");
-  } catch (e) {
-    console.error("error removing member:", e);
-  }
-};
+//     await fetchy(`/api/groups/members/remove/${props.group._id}`, "PATCH", {
+//       body: { username: memberId },
+//     });
+//     emit("group-updated");
+//   } catch (e) {
+//     console.error("error removing member:", e);
+//   }
 </script>
 
 <template>
@@ -86,7 +85,7 @@ const removeMember = async (memberId: string) => {
       <ul class="member-list">
         <li v-for="member in group?.members" :key="member" class="member-item">
           {{ member }}
-          <button @click="removeMember(member)" class="action-button remove-button">Remove</button>
+          <!-- <button @click="removeMember(member)" class="action-button remove-button">Remove</button> -->
         </li>
       </ul>
     </div>
