@@ -38,7 +38,7 @@ const cancelGroup = () => {
   rules.value = "";
   duration.value = "";
   frequency.value = "";
-  totalPot.value = "";
+  contribution.value = "";
   emit("cancel");
 };
 </script>
@@ -68,8 +68,8 @@ const cancelGroup = () => {
       </div>
 
       <div class="form-group">
-        <label for="totalPot">Amount per Contribution:</label>
-        <input id="totalPot" type="number" v-model="totalPot" required class="input-field" />
+        <label for="contribution">Amount per Contribution:</label>
+        <input id="contribution" type="number" v-model="contribution" required class="input-field" />
       </div>
 
       <div class="form-actions">
