@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { fetchy } from "@/utils/fetchy";
 import { onMounted, ref } from "vue";
-import CreateGroup from "./CreatGroup.vue";
+import CreateGroup from "./CreateGroup.vue";
 import FetchGroupsByOrganizer from "./FetchGroupByOrganizer.vue";
 import GroupList from "./GroupList.vue";
 import ManageGroup from "./ManageGroup.vue";
@@ -18,7 +18,7 @@ const selectedGroup = ref<Group | null>(null);
 
 const fetchGroups = async () => {
   try {
-    groups.value = await fetchy("/api/allgroups", "GET");
+    groups.value = await fetchy("/api/groups", "GET");
   } catch (e) {
     console.error("error fetching groups:", e);
   }

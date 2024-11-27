@@ -10,6 +10,7 @@ export interface TransactionDoc extends BaseDoc {
 
 export interface GroupDoc extends BaseDoc {
   name: string;
+  rules: string
   organizer: ObjectId;
   members: ObjectId[];
   value: number;
@@ -31,10 +32,11 @@ export default class GroupingConcept {
     this.transactions = new DocCollection<TransactionDoc>(collectionName);
   }
 
-  async create(name: string, organizer: ObjectId, duration: number, frequency: number, contribution: number) {
+  async create(name: string, rules: string, organizer: ObjectId, duration: number, frequency: number, contribution: number) {
     await this.assertNewGroup(name);
     const _id = await this.groups.createOne({
       name,
+      string,
       organizer,
       members: [organizer],
       value: 0,
