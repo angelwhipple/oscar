@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Grouping, Posting, Scheduling, Sessioning } from "./app";
+import { Authing, Friending, Permissioning, Grouping, Posting, Scheduling, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -72,6 +72,18 @@ class Routes {
   async logOut(session: SessionDoc) {
     Sessioning.end(session);
     return { msg: "Logged out!" };
+  }
+  /// NEW ROUTES ///
+  @Router.post("/permissions/member")
+  async createMember(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Permissioning.addMember(user);
+  }
+
+  @Router.post("/permissions/organizer")
+  async createOrganizer(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Permissioning.addOrganizer(user);
   }
 
   /**

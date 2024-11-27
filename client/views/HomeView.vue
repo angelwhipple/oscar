@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import PermissionForm from "@/components/Permission/PermissionOptions.vue";
 import GroupManagement from "@/components/Grouping/GroupManagement.vue";
 import PostListComponent from "@/components/Post/PostListComponent.vue";
 import { useUserStore } from "@/stores/user";
@@ -14,16 +15,20 @@ const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
       <h1 v-if="isLoggedIn">Welcome {{ currentUsername }}!</h1>
       <h1 v-else>Please login!</h1>
     </section>
-    <PostListComponent />
+    <section v-if="isLoggedIn">
+      <PermissionForm />
+    </section>
   </main>
 
-  <!-- Grouping -->
-  <!-- <CreatGroup /> -->
   <GroupManagement />
 </template>
 
 <style scoped>
 h1 {
   text-align: center;
+}
+
+section {
+  margin: 1rem 0;
 }
 </style>
