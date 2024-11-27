@@ -3,13 +3,10 @@ import { fetchy } from "@/utils/fetchy";
 import { defineEmits, ref } from "vue";
 
 const groupName = ref("");
-// const rules = ref("");
-// const capacity = ref("");
+const rules = ref("");
 const duration = ref("");
 const frequency = ref("");
-const totalPot = ref("");
-// const inviteMembers = ref<string[]>([]);
-// async createGroup(session: SessionDoc, name: string, duration: string, freq: string, amt: string) {
+const contribution = ref("");
 
 const emit = defineEmits(["group-created", "cancel"]);
 
@@ -18,19 +15,17 @@ const createGroup = async () => {
     await fetchy("/api/groups", "POST", {
       body: {
         name: groupName.value,
-        // rules: rules.value,
+        rules: rules.value,
         duration: duration.value,
-        freq: frequency.value,
-        amt: totalPot.value,
-        // invitees: inviteMembers.value,
+        frequency: frequency.value,
+        contribution: contribution.value,
       },
     });
     groupName.value = "";
-    // rules.value = "";
+    rules.value = "";
     duration.value = "";
     frequency.value = "";
-    totalPot.value = "";
-    // inviteMembers.value = [];
+    contribution.value = "";
     // Emit event to parent to fetch updated groups
     emit("group-created");
   } catch (e) {
@@ -40,11 +35,10 @@ const createGroup = async () => {
 
 const cancelGroup = () => {
   groupName.value = "";
-  // rules.value = "";
+  rules.value = "";
   duration.value = "";
   frequency.value = "";
-  totalPot.value = "";
-  // inviteMembers.value = [];
+  contribution.value = "";
   emit("cancel");
 };
 </script>
@@ -58,10 +52,10 @@ const cancelGroup = () => {
         <input id="groupName" v-model="groupName" required class="input-field" />
       </div>
 
-      <!-- <div class="form-group">
+      <div class="form-group">
         <label for="rules">Rules and Regulations:</label>
         <textarea id="rules" v-model="rules" class="textarea-field"></textarea>
-      </div> -->
+      </div>
 
       <div class="form-group">
         <label for="capacity">Duration:</label>
@@ -69,13 +63,13 @@ const cancelGroup = () => {
       </div>
 
       <div class="form-group">
-        <label for="frequency">Frequency of Contribution:</label>
+        <label for="frequency">Frequency of Contribution (in weeks):</label>
         <input id="frequency" type="text" v-model="frequency" required class="input-field" />
       </div>
 
       <div class="form-group">
-        <label for="totalPot">Amount of Total Pot:</label>
-        <input id="totalPot" type="number" v-model="totalPot" required class="input-field" />
+        <label for="contribution">Amount per Contribution:</label>
+        <input id="contribution" type="number" v-model="contribution" required class="input-field" />
       </div>
 
       <div class="form-actions">
