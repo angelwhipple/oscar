@@ -16,12 +16,12 @@ export default class PermissioningConcept {
   }
 
   async addMember(u: ObjectId) {
-    await this.assertNewMember(u)
+    await this.assertNewMember(u);
     const _id = await this.members.createOne({ user: u });
     return { msg: "Member successfully created!", member: await this.members.readOne({ _id }) };
   }
 
-  async addOrganizerPrivileges(u: ObjectId) {
+  async addOrganizer(u: ObjectId) {
     await this.assertUserIsMember(u);
     await this.assertNewOrganizer(u);
     const _id = await this.organizers.createOne({ user: u });

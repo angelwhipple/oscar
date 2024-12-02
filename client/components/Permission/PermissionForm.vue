@@ -1,11 +1,21 @@
 <script setup lang="ts">
+import router from "@/router";
+import { useUserStore } from "@/stores/user";
 import { ref } from "vue";
+
+const { addMember, addOrganizer } = useUserStore();
 
 const selectedPermission = ref("");
 
-function selectPermission(permission: string) {
+async function selectPermission(permission: string) {
   selectedPermission.value = permission;
+  if (selectedPermission.value == "organizer") {
+    await addOrganizer();
+  } else if (selectedPermission.value == "member") {
+    await addMember();
+  }
   alert(`You selected: ${permission}`);
+  void router.push({ name: "Home" });
 }
 </script>
 

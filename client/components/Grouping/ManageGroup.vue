@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { fetchy } from "@/utils/fetchy";
 import { defineEmits, defineProps, ref } from "vue";
+import NotifyingButton from "../Notifying/NotifyingButton.vue";
 import AddMember from "./AddMembers.vue";
 
 const props = defineProps({
@@ -96,6 +97,7 @@ const withdraw = async () => {
       </form>
     </div>
   </div>
+  <NotifyingButton />
 </template>
 
 <style scoped>

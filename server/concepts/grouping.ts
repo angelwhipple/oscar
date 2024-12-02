@@ -1,11 +1,11 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { AlreadyExistsError, BadValuesError, NotAllowedError, NotFoundError } from "./errors";
+import { AlreadyExistsError, NotAllowedError, NotFoundError } from "./errors";
 
 export interface TransactionDoc extends BaseDoc {
-  user: ObjectId,
-  group: ObjectId,  // a Group ID
-  amount: number  // can be + or -
+  user: ObjectId;
+  group: ObjectId; // a Group ID
+  amount: number; // can be + or -
 }
 
 export interface GroupDoc extends BaseDoc {
@@ -15,7 +15,7 @@ export interface GroupDoc extends BaseDoc {
   members: ObjectId[];
   value: number;
   cycleStart: Date;
-  cycleDuration: number;  // in weeks
+  cycleDuration: number; // in weeks
   contributionFrequency: number; // in weeks
   contributionAmount: number;
 }
@@ -43,7 +43,7 @@ export default class GroupingConcept {
       cycleStart: new Date(),
       cycleDuration: duration,
       contributionFrequency: frequency,
-      contributionAmount: contribution
+      contributionAmount: contribution,
     });
     return { msg: `Created new ROSCA group: ${name}`, group: await this.groups.readOne({ _id }) };
   }
@@ -82,23 +82,23 @@ export default class GroupingConcept {
 
   async rename(_id: ObjectId, organizer: ObjectId, name: string) {
     await this.assertUserIsOrganizer(_id, organizer);
-    await this.groups.partialUpdateOne({ _id }, { name })
+    await this.groups.partialUpdateOne({ _id }, { name });
     return { msg: `Renamed group: ${name}`, group: await this.groups.readOne({ _id }) };
   }
 
   async contribute(_id: ObjectId, user: ObjectId, amount: number) {
     await this.assertUserIsMember(_id, user);
     const group = await this.groups.readOne({ _id });
-    await this.groups.partialUpdateOne({ _id }, { value: group?.value! + amount })
-    const id = await this.transactions.createOne({ user, group: _id, amount: amount })
+    await this.groups.partialUpdateOne({ _id }, { value: group?.value! + amount });
+    const id = await this.transactions.createOne({ user, group: _id, amount: amount });
     return { msg: `Contributed $${amount} to ${group?.name}`, transaction: await this.transactions.readOne({ _id: id }) };
   }
 
   async withdraw(_id: ObjectId, user: ObjectId, amount: number) {
     await this.assertUserIsMember(_id, user);
     const group = await this.groups.readOne({ _id });
-    await this.groups.partialUpdateOne({ _id }, { value: group?.value! - amount })
-    const id = await this.transactions.createOne({ user, group: _id, amount: -1 * amount })
+    await this.groups.partialUpdateOne({ _id }, { value: group?.value! - amount });
+    const id = await this.transactions.createOne({ user, group: _id, amount: -1 * amount });
     return { msg: `Withdrew $${amount} from ${group?.name}`, transaction: await this.transactions.readOne({ _id: id }) };
   }
 
@@ -110,7 +110,7 @@ export default class GroupingConcept {
 
   async addManyMembers(_id: ObjectId, owner: ObjectId, users: ObjectId[]) {
     await this.assertUserIsOrganizer(_id, owner); // Only group owners can bulk add members
-    await Promise.all(users.map(user => this.assertUserNotMember(_id, user)));
+    await Promise.all(users.map((user) => this.assertUserNotMember(_id, user)));
     await this.groups.extendArray({ _id }, { members: { $each: users } });
     return { msg: `Added new users to group ${_id}` };
   }
@@ -123,19 +123,19 @@ export default class GroupingConcept {
 
   async removeManyMembers(_id: ObjectId, owner: ObjectId, members: ObjectId[]) {
     await this.assertUserIsOrganizer(_id, owner); // Only group owners can bulk remove members
-    await Promise.all(members.map(member => this.assertUserIsMember(_id, member)));
-    await Promise.all(members.map(member => this.groups.pullFromArray({ _id }, { members: member })));
+    await Promise.all(members.map((member) => this.assertUserIsMember(_id, member)));
+    await Promise.all(members.map((member) => this.groups.pullFromArray({ _id }, { members: member })));
     return { msg: `Removed multiple users from group ${_id}` };
   }
 
   async resetCycle(_id: ObjectId, organizer: ObjectId) {
     await this.assertUserNotMember(_id, organizer);
-    await this.groups.partialUpdateOne({ _id }, { cycleStart: new Date(), value: 0 })
+    await this.groups.partialUpdateOne({ _id }, { cycleStart: new Date(), value: 0 });
     return { msg: `Reset ROSCA cycle for group: ${_id}`, group: await this.groups.readOne({ _id }) };
   }
 
   async disband(_id: ObjectId, user: ObjectId) {
-    await this.assertUserIsOrganizer(_id, user)
+    await this.assertUserIsOrganizer(_id, user);
     await this.groups.deleteOne({ _id });
     return { msg: "Group disbanded successfully!" };
   }
@@ -149,14 +149,14 @@ export default class GroupingConcept {
 
   async assertUserIsMember(_id: ObjectId, user: ObjectId) {
     const group = await this.assertGroupExists(_id);
-    if (group.members.every(member => member.toString() !== user.toString())) {
+    if (group.members.every((member) => member.toString() !== user.toString())) {
       throw new NotAllowedError(`User ${user} is a member of group ${_id}!`);
     }
   }
 
   async assertUserNotMember(_id: ObjectId, user: ObjectId) {
     const group = await this.assertGroupExists(_id);
-    if (group.members.some(member => member.toString() === user.toString())) {
+    if (group.members.some((member) => member.toString() === user.toString())) {
       throw new NotAllowedError(`User ${user} is already a member of group ${_id}!`);
     }
   }
