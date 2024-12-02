@@ -1,13 +1,9 @@
 <script setup lang="ts">
 import { ref } from "vue";
+
 const notification = ref("");
 
 async function createNotif() {
-  // try {
-  //     await fetchy(`/api/groups/rename/${props.group._id}`, "GET");
-  // } catch (error) {
-
-  // }
   console.log("testing 1 2 3");
 }
 </script>
