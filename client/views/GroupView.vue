@@ -6,6 +6,7 @@ import FetchGroupsByOrganizer from "../components/Grouping/FetchGroupByOrganizer
 import GroupList from "../components/Grouping/GroupList.vue";
 import ManageGroup from "../components/Grouping/ManageGroup.vue";
 
+import { useUserStore } from "@/stores/user";
 interface Group {
   _id: string;
   name: string;
@@ -15,10 +16,19 @@ interface Group {
 
 const groups = ref<Group[]>([]);
 const selectedGroup = ref<Group | null>(null);
+const userStore = useUserStore();
+const userRole = ref<string | null>(null);
 
 const fetchGroups = async () => {
   try {
-    groups.value = await fetchy("/api/groups", "GET");
+    const allGroups = await fetchy("/api/groups", "GET");
+    console.log("UserName", userStore.currentUsername);
+    // console.log("All Groups", allGroups);
+    console.log("Current User", userStore.currentUserId);
+
+    groups.value = allGroups.filter((group: Group) => {
+      return group.organizer === userStore.currentUserId || group.members?.includes(userStore.currentUserId);
+    });
   } catch (e) {
     console.error("error fetching groups:", e);
   }
@@ -26,6 +36,7 @@ const fetchGroups = async () => {
 
 const selectGroup = (group: Group) => {
   selectedGroup.value = group;
+  userRole.value = group.organizer === userStore.currentUserId ? "organizer" : "member";
 };
 
 onMounted(fetchGroups);
@@ -36,7 +47,7 @@ onMounted(fetchGroups);
   <FetchGroupsByOrganizer @groups-fetched="groups = $event" />
   <GroupList :groups="groups" @group-selected="selectGroup" />
   <div v-if="selectedGroup">
-    <ManageGroup :group="selectedGroup" @group-updated="fetchGroups" />
+    <ManageGroup :group="selectedGroup" :role="userRole" @group-updated="fetchGroups" />
   </div>
 </template>
 
