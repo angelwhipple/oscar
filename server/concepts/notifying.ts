@@ -3,7 +3,7 @@ import DocCollection, { BaseDoc } from "../framework/doc";
 import { NotFoundError } from "./errors";
 
 interface ActionItem {
-  action: "Payment" | "Reminder" | "SOS";
+  action: "Payment" | "Reminder" | "SOS" | "Invitation";
 }
 
 export interface NotifyingDoc extends BaseDoc {

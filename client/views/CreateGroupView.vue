@@ -1,8 +1,7 @@
 <script setup lang="ts">
-import router from "@/router";
+import CreateGroup from "@/components/Grouping/CreateGroup.vue";
 import { fetchy } from "@/utils/fetchy";
 import { onMounted, ref } from "vue";
-import GroupList from "../components/Grouping/GroupList.vue";
 
 interface Group {
   _id: string;
@@ -12,7 +11,6 @@ interface Group {
 }
 
 const groups = ref<Group[]>([]);
-const selectedGroup = ref<Group | null>(null);
 
 const fetchGroups = async () => {
   try {
@@ -22,20 +20,11 @@ const fetchGroups = async () => {
   }
 };
 
-const selectGroup = (group: Group) => {
-  selectedGroup.value = group;
-  void router.push({
-    name: "InternalGroup",
-    params: { groupId: group._id },
-  });
-};
-
 onMounted(fetchGroups);
 </script>
 
 <template>
-  <!-- <FetchGroupsByOrganizer @groups-fetched="groups = $event" /> -->
-  <GroupList :groups="groups" @group-selected="selectGroup" />
+  <CreateGroup @group-created="fetchGroups" />
 </template>
 
 <style scoped>

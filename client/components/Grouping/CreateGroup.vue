@@ -1,5 +1,7 @@
 <script setup lang="ts">
+import router from "@/router";
 import { fetchy } from "@/utils/fetchy";
+
 import { defineEmits, ref } from "vue";
 
 const groupName = ref("");
@@ -28,6 +30,7 @@ const createGroup = async () => {
     contribution.value = "";
     // Emit event to parent to fetch updated groups
     emit("group-created");
+    await void router.push({ name: "Home" });
   } catch (e) {
     console.error("error creating group:", e);
   }
@@ -58,7 +61,7 @@ const cancelGroup = () => {
       </div>
 
       <div class="form-group">
-        <label for="capacity">Duration:</label>
+        <label for="capacity">Duration (in weeks):</label>
         <input id="capacity" type="number" v-model="duration" required class="input-field" />
       </div>
 

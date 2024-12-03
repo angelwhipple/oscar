@@ -11,11 +11,14 @@ async function selectPermission(permission: string) {
   selectedPermission.value = permission;
   if (selectedPermission.value == "organizer") {
     await addOrganizer();
+    alert(`You selected: ${permission}`);
+    await void router.push({ name: "CreateGroup" });
+    console.log("routing?");
   } else if (selectedPermission.value == "member") {
     await addMember();
+    alert(`You selected: ${permission}`);
+    await void router.push({ name: "Home" }); //create invitation view
   }
-  alert(`You selected: ${permission}`);
-  void router.push({ name: "Home" });
 }
 </script>
 

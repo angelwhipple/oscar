@@ -5,7 +5,7 @@ import NotifyingButton from "../Notifying/NotifyingButton.vue";
 import AddMember from "./AddMembers.vue";
 
 const props = defineProps({
-  group: Object,
+  group: Object, //has id, name, organiser, and member
 });
 
 const emit = defineEmits(["group-updated"]);
@@ -97,7 +97,7 @@ const withdraw = async () => {
       </form>
     </div>
   </div>
-  <NotifyingButton />
+  <NotifyingButton :group="group" />
 </template>
 
 <style scoped>

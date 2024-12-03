@@ -1,7 +1,11 @@
 <script setup lang="ts">
-import { ref } from "vue";
+import { defineProps, ref } from "vue";
 
 const notification = ref("");
+
+const props = defineProps({
+  group: Object, //has id, name, organiser, and member
+});
 
 async function createNotif() {
   console.log("testing 1 2 3");
