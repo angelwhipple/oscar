@@ -17,7 +17,7 @@ interface Group {
 const groups = ref<Group[]>([]);
 const selectedGroup = ref<Group | null>(null);
 const userStore = useUserStore();
-const userRole = ref<string | null>(null);
+const userRole = ref<string | undefined>(undefined);
 
 const fetchGroups = async () => {
   try {
