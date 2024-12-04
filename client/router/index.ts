@@ -34,6 +34,12 @@ const router = createRouter({
       },
     },
     {
+      path: "/permission",
+      name: "Permissions",
+      component: PermissionView,
+      meta: { requiresAuth: true },
+    },
+    {
       path: "/:catchAll(.*)",
       name: "not-found",
       component: NotFoundView,

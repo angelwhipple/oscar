@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { fetchy } from "@/utils/fetchy";
 import { defineEmits, defineProps, ref } from "vue";
+import NotifyingButton from "../Notifying/NotifyingButton.vue";
 import AddMember from "./AddMembers.vue";
 
 const props = defineProps({
   group: Object,
+  role: String,
 });
 
 const emit = defineEmits(["group-updated"]);
@@ -58,7 +60,7 @@ const withdraw = async () => {
   <div class="manage-group-container">
     <h3 class="group-title">Manage Group: {{ group?.name }}</h3>
 
-    <div class="manage-section">
+    <div class="manage-section" v-if="role === 'organizer'">
       <h4>Rename Group</h4>
       <form @submit.prevent="renameGroup" class="manage-form">
         <label for="renameGroupName" class="form-label">New Group Name:</label>
@@ -76,9 +78,10 @@ const withdraw = async () => {
       </ul>
     </div>
 
-    <AddMember :groupId="group?._id" @member-added="emit('group-updated')" />
+    <!-- <AddMember :groupId="group?._id" @member-added="emit('group-updated')" /> -->
+    <AddMember v-if="role === 'organizer'" :groupId="group?._id" @member-added="emit('group-updated')" />
 
-    <div class="manage-section">
+    <div class="manage-section" v-if="role === 'organizer'">
       <h4>Contribute</h4>
       <form @submit.prevent="contribute" class="manage-form">
         <label for="contributionAmount" class="form-label">Amount:</label>
@@ -87,7 +90,7 @@ const withdraw = async () => {
       </form>
     </div>
 
-    <div class="manage-section">
+    <div class="manage-section" v-if="role === 'organizer'">
       <h4>Withdraw</h4>
       <form @submit.prevent="withdraw" class="manage-form">
         <label for="withdrawalAmount" class="form-label">Amount:</label>
@@ -96,6 +99,7 @@ const withdraw = async () => {
       </form>
     </div>
   </div>
+  <NotifyingButton />
 </template>
 
 <style scoped>

@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Permissioning, Grouping, Posting, Scheduling, Sessioning } from "./app";
+import { Authing, Friending, Grouping, Permissioning, Posting, Scheduling, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -88,7 +88,7 @@ class Routes {
   async createOrganizer(session: SessionDoc) {
     const user = Sessioning.getUser(session);
     await Permissioning.addMember(user);
-    return await Permissioning.addOrganizerPrivileges(user);
+    return await Permissioning.addOrganizer(user);
   }
 
   /**
