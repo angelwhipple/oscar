@@ -2,7 +2,8 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Grouping, Permissioning, Posting, Scheduling, Sessioning } from "./app";
+import { Authing, Friending, Grouping, Notifying, Permissioning, Posting, Scheduling, Sessioning } from "./app";
+import { ActionItem } from "./concepts/notifying";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -89,6 +90,21 @@ class Routes {
     const user = Sessioning.getUser(session);
     await Permissioning.addMember(user);
     return await Permissioning.addOrganizer(user);
+  }
+  /**
+   * NOTIFYING
+   */
+
+  @Router.post("/notifying")
+  async createNotif(session: SessionDoc, recepients: ObjectId[], message: string, action: ActionItem) {
+    const user = Sessioning.getUser(session);
+    return await Notifying.createNotification(user, recepients, message, action);
+  }
+
+  @Router.get("/notifying/display")
+  async displayNotif(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Notifying.getNotifications(user);
   }
 
   /**

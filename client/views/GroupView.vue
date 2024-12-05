@@ -4,7 +4,7 @@ import { fetchy } from "@/utils/fetchy";
 import { onMounted, ref } from "vue";
 import GroupList from "../components/Grouping/GroupList.vue";
 
-interface Group {
+export interface Group {
   _id: string;
   name: string;
   organizer: string;
