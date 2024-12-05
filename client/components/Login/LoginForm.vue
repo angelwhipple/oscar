@@ -5,10 +5,11 @@ import { ref } from "vue";
 
 const username = ref("");
 const password = ref("");
-const { loginUser, updateSession } = useUserStore();
+const { loginUser, updateSession, refreshRole } = useUserStore();
 
 async function login() {
   await loginUser(username.value, password.value);
+  await refreshRole();
   void updateSession();
   void router.push({ name: "Home" });
 }

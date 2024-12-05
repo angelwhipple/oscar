@@ -6,6 +6,7 @@ import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
 import SettingView from "../views/SettingView.vue";
+import PermissionView from "@/views/PermissionView.vue";
 
 const router = createRouter({
   history: createWebHistory(),

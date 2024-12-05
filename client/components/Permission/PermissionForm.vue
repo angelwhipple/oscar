@@ -3,18 +3,16 @@ import router from "@/router";
 import { useUserStore } from "@/stores/user";
 import { ref } from "vue";
 
-const { addMember, addOrganizer } = useUserStore();
-
-const selectedPermission = ref("");
+const userStore = useUserStore();
 
 async function selectPermission(permission: string) {
-  selectedPermission.value = permission;
-  if (selectedPermission.value == "organizer") {
-    await addOrganizer();
-  } else if (selectedPermission.value == "member") {
-    await addMember();
-  }
   alert(`You selected: ${permission}`);
+  if (permission == "organizer") {
+    await userStore.addOrganizer();
+  } else if (permission == "member") {
+    await userStore.addMember();
+  }
+  await userStore.refreshRole();
   void router.push({ name: "Home" });
 }
 </script>

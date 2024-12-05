@@ -18,7 +18,7 @@ const addMember = async () => {
     newMember.value = "";
     emit("member-added");
   } catch (e) {
-    console.error("error adding member:", e);
+    console.error(`Error adding member to group: ${e}`);
   }
 };
 </script>

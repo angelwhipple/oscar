@@ -2,31 +2,26 @@
 import { fetchy } from "@/utils/fetchy";
 import { defineEmits, defineProps, ref } from "vue";
 import NotifyingButton from "../Notifying/NotifyingButton.vue";
+import StyledButton from "@/components/Useful/StyledButton.vue";
 import AddMember from "./AddMembers.vue";
+import { useUserStore } from "@/stores/user";
+import { useGroupStore } from "@/stores/group";
 
-const props = defineProps({
-  group: Object,
-  role: String,
-});
-
-const emit = defineEmits(["group-updated"]);
+const props = defineProps({ group: Object });
+const emit = defineEmits(["group-updated", "clear-selected"]);
+const userStore = useUserStore();
+const groupStore = useGroupStore();
 
 const renameGroupName = ref("");
 const contributionAmount = ref("");
 const withdrawalAmount = ref("");
 
 const renameGroup = async () => {
-  try {
-    if (!props.group) return;
-    await fetchy(`/api/groups/rename/${props.group._id}`, "PATCH", {
-      body: { name: renameGroupName.value },
-    });
-    renameGroupName.value = "";
-    // Emit event to parent to fetch updated groups
-    emit("group-updated");
-  } catch (e) {
-    console.error("error renaming group:", e);
-  }
+  if (!props.group) return;
+  await groupStore.renameGroup(props.group._id, renameGroupName.value);
+  // Emit event to parent to fetch updated groups
+  emit("group-updated");
+  renameGroupName.value = "";
 };
 
 const contribute = async () => {
@@ -37,9 +32,7 @@ const contribute = async () => {
     });
     contributionAmount.value = "";
     emit("group-updated");
-  } catch (e) {
-    console.error("error contributing:", e);
-  }
+  } catch (e) {}
 };
 
 const withdraw = async () => {
@@ -50,17 +43,20 @@ const withdraw = async () => {
     });
     withdrawalAmount.value = "";
     emit("group-updated");
-  } catch (e) {
-    console.error("error withdrawing:", e);
-  }
+  } catch (e) {}
 };
+
+const clearSelectedGroup = () => {
+  emit("clear-selected");
+}
 </script>
 
 <template>
-  <div class="manage-group-container">
-    <h3 class="group-title">Manage Group: {{ group?.name }}</h3>
+  <body class="page">
+    <div class="manage-group-container">
+    <h3 class="group-title">Group: {{ group?.name }}</h3>
 
-    <div class="manage-section" v-if="role === 'organizer'">
+    <div class="manage-section" v-if="userStore.role === 'organizer'">
       <h4>Rename Group</h4>
       <form @submit.prevent="renameGroup" class="manage-form">
         <label for="renameGroupName" class="form-label">New Group Name:</label>
@@ -78,10 +74,9 @@ const withdraw = async () => {
       </ul>
     </div>
 
-    <!-- <AddMember :groupId="group?._id" @member-added="emit('group-updated')" /> -->
-    <AddMember v-if="role === 'organizer'" :groupId="group?._id" @member-added="emit('group-updated')" />
+    <AddMember v-if="userStore.role === 'organizer'" :groupId="props.group?._id" @member-added="emit('group-updated')" />
 
-    <div class="manage-section" v-if="role === 'organizer'">
+    <div class="manage-section">
       <h4>Contribute</h4>
       <form @submit.prevent="contribute" class="manage-form">
         <label for="contributionAmount" class="form-label">Amount:</label>
@@ -90,7 +85,7 @@ const withdraw = async () => {
       </form>
     </div>
 
-    <div class="manage-section" v-if="role === 'organizer'">
+    <div class="manage-section">
       <h4>Withdraw</h4>
       <form @submit.prevent="withdraw" class="manage-form">
         <label for="withdrawalAmount" class="form-label">Amount:</label>
@@ -100,11 +95,24 @@ const withdraw = async () => {
     </div>
   </div>
   <NotifyingButton />
+  <StyledButton :on-click="clearSelectedGroup">
+    Back
+  </StyledButton>
+  </body>
 </template>
 
 <style scoped>
+.page {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  row-gap: 20px;
+}
+
 .manage-group-container {
-  max-width: 700px;
+  width: 70%;
   margin: 0 auto;
   padding: 2.5em;
   border: 1px solid #e0e0e0;

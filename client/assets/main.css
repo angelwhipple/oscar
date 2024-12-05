@@ -30,3 +30,16 @@ a.button {
   align-items: center;
   gap: 1em;
 }
+
+.text-center {
+  text-align: center;
+}
+
+.opaque {
+  opacity: 0.5;
+}
+
+.center-align {
+  align-items: center;
+  justify-content: center;
+}

@@ -1,53 +1,45 @@
 <script setup lang="ts">
-import { fetchy } from "@/utils/fetchy";
-import { onMounted, ref } from "vue";
 import CreateGroup from "../components/Grouping/CreateGroup.vue";
-import FetchGroupsByOrganizer from "../components/Grouping/FetchGroupByOrganizer.vue";
 import GroupList from "../components/Grouping/GroupList.vue";
-import ManageGroup from "../components/Grouping/ManageGroup.vue";
-
+import GroupDetails from "../components/Grouping/GroupDetails.vue";
+import FetchGroupsByOrganizer from "../components/Grouping/FetchGroupByOrganizer.vue";
+import { useGroupStore } from "@/stores/group";
 import { useUserStore } from "@/stores/user";
-interface Group {
-  _id: string;
-  name: string;
-  organizer: string;
-  members: string[];
+import { ref } from "vue";
+import { GroupDoc } from "../../server/concepts/grouping";
+
+const groupStore = useGroupStore();
+const userStore = useUserStore();
+
+const selectedGroup = ref<GroupDoc | null>();
+const isCreating = ref(false);
+
+const selectGroup = async (groupId: string) => {
+  selectedGroup.value = groupId ? await groupStore.fetchGroup(groupId) : null;
 }
 
-const groups = ref<Group[]>([]);
-const selectedGroup = ref<Group | null>(null);
-const userStore = useUserStore();
-const userRole = ref<string | undefined>(undefined);
+const setIsCreating = (value: boolean) => {
+  isCreating.value = value;
+}
 
-const fetchGroups = async () => {
-  try {
-    const allGroups = await fetchy("/api/groups", "GET");
-    console.log("UserName", userStore.currentUsername);
-    // console.log("All Groups", allGroups);
-    console.log("Current User", userStore.currentUserId);
-
-    groups.value = allGroups.filter((group: Group) => {
-      return group.organizer === userStore.currentUserId || group.members?.includes(userStore.currentUserId);
-    });
-  } catch (e) {
-    console.error("error fetching groups:", e);
-  }
-};
-
-const selectGroup = (group: Group) => {
-  selectedGroup.value = group;
-  userRole.value = group.organizer === userStore.currentUserId ? "organizer" : "member";
-};
-
-onMounted(fetchGroups);
+const clearSelected = () => {
+  selectedGroup.value = null;
+}
 </script>
 
 <template>
-  <CreateGroup @group-created="fetchGroups" />
-  <FetchGroupsByOrganizer @groups-fetched="groups = $event" />
-  <GroupList :groups="groups" @group-selected="selectGroup" />
   <div v-if="selectedGroup">
-    <ManageGroup :group="selectedGroup" :role="userRole" @group-updated="fetchGroups" />
+    <GroupDetails :group="selectedGroup" @group-updated="groupStore.refreshGroups" @clear-selected="clearSelected" />
+  </div>
+  <div v-else>
+      <CreateGroup
+        v-if="isCreating && userStore.role === 'organizer'"
+        @group-created="setIsCreating(false)"
+        @cancel="setIsCreating(false)" />
+      <div v-else>
+        <GroupList @selected-group="selectGroup" @create="setIsCreating(true)" />
+        <FetchGroupsByOrganizer v-if="userStore.role === 'member'"/>
+      </div>
   </div>
 </template>
 
