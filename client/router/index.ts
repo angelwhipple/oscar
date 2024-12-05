@@ -1,8 +1,9 @@
+import { useUserStore } from "@/stores/user";
 import { storeToRefs } from "pinia";
 import { createRouter, createWebHistory } from "vue-router";
-import { useUserStore } from "@/stores/user";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
+import MessageView from "../views/MessageView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
 import SettingView from "../views/SettingView.vue";
 
@@ -29,6 +30,18 @@ const router = createRouter({
         const { isLoggedIn } = storeToRefs(useUserStore());
         if (isLoggedIn.value) {
           return { name: "Settings" };
+        }
+      },
+    },
+    {
+      path: "/messages",
+      name: "Messages",
+      meta: { requiresAuth: true },
+      component: MessageView,
+      beforeEnter: (to, from) => {
+        const { isLoggedIn } = storeToRefs(useUserStore());
+        if (!isLoggedIn.value) {
+          return { name: "Home" };
         }
       },
     },
