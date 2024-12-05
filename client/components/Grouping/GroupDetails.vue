@@ -4,8 +4,8 @@ import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { defineEmits, defineProps, ref } from "vue";
 
-import NotifyingButton from "../Notifying/NotifyingButton.vue";
 import StyledButton from "@/components/Useful/StyledButton.vue";
+import NotifyingButton from "../Notifying/NotifyingButton.vue";
 import AddMember from "./AddMembers.vue";
 
 const props = defineProps({ group: Object });
@@ -82,25 +82,15 @@ const clearSelectedGroup = () => {
     <div class="manage-group-container">
       <h3 class="group-title">Group: {{ group?.name }}</h3>
 
-      <div class="manage-section" v-if="userStore.role === 'organizer'">
-        <h4>Rename Group</h4>
-        <form @submit.prevent="renameGroup" class="manage-form">
-          <label for="renameGroupName" class="form-label">New Group Name:</label>
-          <input id="renameGroupName" v-model="renameGroupName" required class="input-field" />
-          <button type="submit" class="action-button rename-button">Rename Group</button>
-        </form>
+      <div class="balance-container">
+        <!-- <h4>Current Balance :</h4> -->
+        <p class="balance-circle">
+          Current <br />
+          Balance<br />
+          <br />
+          <strong> ${{ balance }}</strong>
+        </p>
       </div>
-
-      <div class="manage-section">
-        <h4>Members</h4>
-        <ul class="member-list">
-          <li v-for="member in group?.members" :key="member" class="member-item">
-            {{ member }}
-          </li>
-        </ul>
-      </div>
-
-      <AddMember v-if="userStore.role === 'organizer'" :groupId="props.group?._id" @member-added="emit('group-updated')" />
 
       <div class="manage-section">
         <h4>Contribute</h4>
@@ -119,15 +109,32 @@ const clearSelectedGroup = () => {
           <button type="submit" class="action-button withdraw-button">Withdraw</button>
         </form>
       </div>
-
-      <div class="balance-container">
-        <h4>Current Balance :</h4>
-        <p class="balance-circle">
-          <strong>${{ balance }}</strong>
-        </p>
-      </div>
     </div>
+
+    <!-- <div> -->
+    <div class="manage-section" v-if="userStore.role === 'organizer'">
+      <h4>Rename Group</h4>
+      <form @submit.prevent="renameGroup" class="manage-form">
+        <label for="renameGroupName" class="form-label">New Group Name:</label>
+        <input id="renameGroupName" v-model="renameGroupName" required class="input-field" />
+        <button type="submit" class="action-button rename-button">Rename Group</button>
+      </form>
+    </div>
+
+    <div class="manage-section">
+      <h4>Members</h4>
+      <ul class="member-list">
+        <li v-for="member in group?.members" :key="member" class="member-item">
+          {{ member }}
+        </li>
+      </ul>
+    </div>
+
+    <AddMember v-if="userStore.role === 'organizer'" :groupId="props.group?._id" @member-added="emit('group-updated')" />
+    <!-- </div> -->
+
     <NotifyingButton />
+
     <StyledButton :on-click="clearSelectedGroup"> Back </StyledButton>
   </body>
 </template>
@@ -143,7 +150,7 @@ const clearSelectedGroup = () => {
 }
 
 .manage-group-container {
-  width: 70%;
+  width: 90%;
   margin: 0 auto;
   padding: 2.5em;
   border: 1px solid #e0e0e0;
@@ -165,8 +172,8 @@ const clearSelectedGroup = () => {
 
 .manage-form {
   display: flex;
-  flex-direction: column;
-  gap: 1em;
+  flex-direction: row;
+  gap: 0.25em;
 }
 
 .form-label {
@@ -243,8 +250,11 @@ const clearSelectedGroup = () => {
   height: 200px;
   border-radius: 50%;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  align-items: center;
+  /* height: 100px; */
   font-size: 20px;
   border: 1px solid #ccc;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
