@@ -2,7 +2,8 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Accounting, Authing, Friending, Grouping, Permissioning, Posting, Scheduling, Sessioning } from "./app";
+import { Authing, Friending, Grouping, Notifying, Permissioning, Posting, Scheduling, Sessioning, Accounting } from "./app";
+import { ActionItem } from "./concepts/notifying";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -36,7 +37,7 @@ class Routes {
     return await Authing.getUserByUsername(username);
   }
 
-  @Router.get("/users/id/:id")
+  @Router.get("/users/:id")
   @Router.validate(z.object({ id: z.string().min(1) }))
   async getUserById(id: string) {
     const oid = new ObjectId(id);
@@ -108,6 +109,21 @@ class Routes {
     const user = Sessioning.getUser(session);
     await Permissioning.addMember(user);
     return await Permissioning.addOrganizer(user);
+  }
+  /**
+   * NOTIFYING
+   */
+
+  @Router.post("/notifying")
+  async createNotif(session: SessionDoc, recepients: ObjectId[], message: string, action: ActionItem) {
+    const user = Sessioning.getUser(session);
+    return await Notifying.createNotification(user, recepients, message, action);
+  }
+
+  @Router.get("/notifying/display")
+  async displayNotif(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Notifying.getNotifications(user);
   }
 
   /**
@@ -284,7 +300,6 @@ class Routes {
   async resetCycle(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    // return await Grouping.resetCycle(oid, user);
   }
 
   @Router.delete("/groups/:id")
