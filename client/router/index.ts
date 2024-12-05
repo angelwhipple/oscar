@@ -1,7 +1,6 @@
 import { storeToRefs } from "pinia";
 import { createRouter, createWebHistory } from "vue-router";
 import { useUserStore } from "@/stores/user";
-import CreateGroupView from "../views/CreateGroupView.vue";
 import HomeView from "../views/HomeView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
