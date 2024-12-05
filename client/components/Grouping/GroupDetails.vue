@@ -17,6 +17,8 @@ const renameGroupName = ref("");
 const contributionAmount = ref("");
 const withdrawalAmount = ref("");
 
+const memberUsernames = ref([]); //to hold user names of members
+
 import { onMounted, watch } from "vue";
 
 const balance = ref(0);
@@ -27,9 +29,21 @@ const fetchBalance = async () => {
   balance.value = response.balance;
 };
 
+//fetch usernames of members
+const fetchMemberUsernames = async () => {
+  if (!props.group || !props.group.members) return;
+  memberUsernames.value = await Promise.all(
+    props.group.members.map(async (memberId) => {
+      const response = await fetchy(`/api/users/id/${memberId}`, "GET");
+      return response.username;
+    }),
+  );
+};
+
 // Fetch balance on component load
 onMounted(() => {
   fetchBalance();
+  fetchMemberUsernames();
 });
 
 // Watch for updates to the group and refetch balance
@@ -74,6 +88,7 @@ const withdraw = async () => {
 
 const clearSelectedGroup = () => {
   emit("clear-selected");
+  fetchBalance();
 };
 </script>
 
@@ -124,8 +139,11 @@ const clearSelectedGroup = () => {
     <div class="manage-section">
       <h4>Members</h4>
       <ul class="member-list">
-        <li v-for="member in group?.members" :key="member" class="member-item">
+        <!-- <li v-for="member in group?.members" :key="member" class="member-item">
           {{ member }}
+        </li> -->
+        <li v-for="username in memberUsernames" :key="username" class="member-item">
+          {{ username }}
         </li>
       </ul>
     </div>
@@ -150,13 +168,17 @@ const clearSelectedGroup = () => {
 }
 
 .manage-group-container {
-  width: 90%;
+  width: 50%;
   margin: 0 auto;
   padding: 2.5em;
   border: 1px solid #e0e0e0;
   border-radius: 12px;
   background-color: #ffffff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .group-title {
