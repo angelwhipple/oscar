@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Grouping, Notifying, Permissioning, Posting, Scheduling, Sessioning, Accounting } from "./app";
+import { Accounting, Authing, Friending, Grouping, Notifying, Permissioning, Posting, Scheduling, Sessioning } from "./app";
 import { ActionItem } from "./concepts/notifying";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
@@ -37,7 +37,7 @@ class Routes {
     return await Authing.getUserByUsername(username);
   }
 
-  @Router.get("/users/:id")
+  @Router.get("/users/id/:id")
   @Router.validate(z.object({ id: z.string().min(1) }))
   async getUserById(id: string) {
     const oid = new ObjectId(id);
