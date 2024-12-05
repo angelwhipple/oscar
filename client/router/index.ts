@@ -1,13 +1,10 @@
 import { storeToRefs } from "pinia";
 import { createRouter, createWebHistory } from "vue-router";
-
 import { useUserStore } from "@/stores/user";
 import CreateGroupView from "../views/CreateGroupView.vue";
 import HomeView from "../views/HomeView.vue";
-import InternalGroupView from "../views/InternalGroupView.vue";
 import LoginView from "../views/LoginView.vue";
 import NotFoundView from "../views/NotFoundView.vue";
-import PermissionView from "../views/PermissionView.vue";
 import SettingView from "../views/SettingView.vue";
 
 const router = createRouter({
@@ -35,24 +32,6 @@ const router = createRouter({
           return { name: "Settings" };
         }
       },
-    },
-    {
-      path: "/permission",
-      name: "Permissions",
-      component: PermissionView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/createGroup",
-      name: "CreateGroup",
-      component: CreateGroupView,
-      meta: { requiresAuth: true },
-    },
-    {
-      path: "/internal-group/:groupId", // Add a route with dynamic parameter
-      name: "InternalGroup",
-      component: InternalGroupView,
-      meta: { requiresAuth: true },
     },
     {
       path: "/:catchAll(.*)",
