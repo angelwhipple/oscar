@@ -1,24 +1,19 @@
 <script setup lang="ts">
 import router from "@/router";
 import { useUserStore } from "@/stores/user";
-import { ref } from "vue";
+import { defineEmits } from "vue";
 
-const { addMember, addOrganizer } = useUserStore();
-
-const selectedPermission = ref("");
+const emit = defineEmits(["selected-permissions"])
+const userStore = useUserStore();
 
 async function selectPermission(permission: string) {
-  selectedPermission.value = permission;
-  if (selectedPermission.value == "organizer") {
-    await addOrganizer();
-    alert(`You selected: ${permission}`);
-    await void router.push({ name: "CreateGroup" });
-    console.log("routing?");
-  } else if (selectedPermission.value == "member") {
-    await addMember();
-    alert(`You selected: ${permission}`);
-    await void router.push({ name: "Home" }); //create invitation view
+  if (permission == "organizer") {
+    await userStore.addOrganizer();
+  } else if (permission == "member") {
+    await userStore.addMember();
   }
+  await userStore.refreshRole();
+  emit("selected-permissions");
 }
 </script>
 

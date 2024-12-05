@@ -15,7 +15,7 @@ const reset = () => {
 };
 
 async function getGroupMembers() {
-  invitees.value = props.group.members;
+  invitees.value = props.group!.members;
   //angel will fix with groupStore
 }
 
@@ -34,11 +34,10 @@ const PaymentAction = () => {
 //changing no
 async function createNotif() {
   try {
-    await fetchy(`/api/notifying/`, "POST", { body: { recipients: invitees.value, message: notification.value, action: actionType.value } });
+    await fetchy(`/api/notifying`, "POST", { body: { recipients: invitees.value, message: notification.value, action: actionType.value } });
   } catch (e) {
-    console.error("error fetching group", e);
+    console.error(`Error creating notification: ${e}`);
   }
-  console.log("notification created!");
   reset();
 }
 </script>

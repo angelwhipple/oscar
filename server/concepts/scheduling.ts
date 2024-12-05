@@ -26,7 +26,6 @@ export default class SchedulingConcept {
     const _id = await this.schedules.createOne({ organizer, invitees });
     const availability: Record<string, ObjectId[]> = {};
     for (let i = new Date(startDate); i <= endDate; i.setDate(i.getDate() + 1)) {
-      console.log(`Date: ${i}`);
       const day = i.toLocaleDateString();
       availability[day] = [];
     }

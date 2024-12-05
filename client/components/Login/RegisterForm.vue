@@ -11,8 +11,7 @@ async function register() {
   await createUser(username.value, password.value);
   await loginUser(username.value, password.value);
   await updateSession();
-  await void router.push({ name: "Permissions" });
-  console.log("redirecting");
+  void router.push({ name: "Home" });
 }
 </script>
 

@@ -7,11 +7,14 @@ export const useUserStore = defineStore(
   "user",
   () => {
     const currentUsername = ref("");
+    const currentUserId = ref(""); // New state to store the user's ID
+    const role = ref("")
 
     const isLoggedIn = computed(() => currentUsername.value !== "");
 
     const resetStore = () => {
       currentUsername.value = "";
+      currentUserId.value = ""; // Reset the user ID when the store is reset
     };
 
     const createUser = async (username: string, password: string) => {
@@ -19,6 +22,10 @@ export const useUserStore = defineStore(
         body: { username, password },
       });
     };
+
+    const fetchUser = async (id: string) => {
+      return await fetchy(`/api/users/${id}`, "GET", { alert: false });
+    }
 
     const loginUser = async (username: string, password: string) => {
       await fetchy("/api/login", "POST", {
@@ -28,10 +35,12 @@ export const useUserStore = defineStore(
 
     const updateSession = async () => {
       try {
-        const { username } = await fetchy("/api/session", "GET", { alert: false });
+        const { username, _id } = await fetchy("/api/session", "GET", { alert: false });
         currentUsername.value = username;
+        currentUserId.value = _id; // Update the current user ID from the session data
       } catch {
         currentUsername.value = "";
+        currentUserId.value = ""; // Reset the user ID if session update fails
       }
     };
 
@@ -53,11 +62,10 @@ export const useUserStore = defineStore(
       resetStore();
     };
 
-    // Permissioning
+    // Permissions
     const addMember = async () => {
       try {
-        const response = await fetchy("/api/permissions/member", "POST");
-        return response;
+        return await fetchy("/api/permissions/member", "POST");
       } catch (error) {
         console.error("Error adding member:", error);
         throw new Error("Failed to add member");
@@ -66,19 +74,29 @@ export const useUserStore = defineStore(
 
     const addOrganizer = async () => {
       try {
-        const response = await fetchy("/api/permissions/organizer", "POST");
-        return response;
+        return await fetchy("/api/permissions/organizer", "POST");
       } catch (error) {
         console.error("Error adding organizer:", error);
         throw new Error("Failed to add organizer");
       }
     };
 
+    const refreshRole = async () => {
+      role.value = await fetchy("/api/permissions", "GET", { alert: false });
+      console.log(`Set role : ${role.value}`);
+    }
+
+    const checkNewMember = async (id: string) => {
+      return await fetchy("/api/permissions/new", "GET", { alert: false });
+    }
+
     return {
       currentUsername,
+      currentUserId, // Expose the new state
       isLoggedIn,
       createUser,
       loginUser,
+      fetchUser,
       updateSession,
       logoutUser,
       updateUserUsername,
@@ -86,6 +104,9 @@ export const useUserStore = defineStore(
       deleteUser,
       addMember,
       addOrganizer,
+      refreshRole,
+      checkNewMember,
+      role
     };
   },
   { persist: true },

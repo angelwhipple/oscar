@@ -1,41 +1,43 @@
 <script setup lang="ts">
-import router from "@/router";
-import { fetchy } from "@/utils/fetchy";
-import { onMounted, ref } from "vue";
+import { useGroupStore } from "@/stores/group";
+import { useUserStore } from "@/stores/user";
+import { ref } from "vue";
+import { GroupDoc } from "../../server/concepts/grouping";
+import CreateGroup from "../components/Grouping/CreateGroup.vue";
+import FetchGroupsByOrganizer from "../components/Grouping/FetchGroupByOrganizer.vue";
+import GroupDetails from "../components/Grouping/GroupDetails.vue";
 import GroupList from "../components/Grouping/GroupList.vue";
 
-export interface Group {
-  _id: string;
-  name: string;
-  organizer: string;
-  members: string[];
-}
+const groupStore = useGroupStore();
+const userStore = useUserStore();
 
-const groups = ref<Group[]>([]);
-const selectedGroup = ref<Group | null>(null);
+const selectedGroup = ref<GroupDoc | null>();
+const isCreating = ref(false);
 
-const fetchGroups = async () => {
-  try {
-    groups.value = await fetchy("/api/groups", "GET");
-  } catch (e) {
-    console.error("error fetching groups:", e);
-  }
+const selectGroup = async (groupId: string) => {
+  selectedGroup.value = groupId ? await groupStore.fetchGroup(groupId) : null;
 };
 
-const selectGroup = (group: Group) => {
-  selectedGroup.value = group;
-  void router.push({
-    name: "InternalGroup",
-    params: { groupId: group._id },
-  });
+const setIsCreating = (value: boolean) => {
+  isCreating.value = value;
 };
 
-onMounted(fetchGroups);
+const clearSelected = () => {
+  selectedGroup.value = null;
+};
 </script>
 
 <template>
-  <!-- <FetchGroupsByOrganizer @groups-fetched="groups = $event" /> -->
-  <GroupList :groups="groups" @group-selected="selectGroup" />
+  <div v-if="selectedGroup">
+    <GroupDetails :group="selectedGroup" @group-updated="groupStore.refreshGroups" @clear-selected="clearSelected" />
+  </div>
+  <div v-else>
+    <CreateGroup v-if="isCreating && userStore.role === 'organizer'" @group-created="setIsCreating(false)" @cancel="setIsCreating(false)" />
+    <div v-else>
+      <GroupList @selected-group="selectGroup" @create="setIsCreating(true)" />
+      <FetchGroupsByOrganizer v-if="userStore.role === 'member'" />
+    </div>
+  </div>
 </template>
 
 <style scoped>

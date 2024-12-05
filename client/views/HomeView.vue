@@ -2,18 +2,33 @@
 import { useUserStore } from "@/stores/user";
 import GroupView from "@/views/GroupView.vue";
 import { storeToRefs } from "pinia";
+import { onMounted, ref } from "vue";
+import PermissionForm from "@/components/Permission/PermissionForm.vue";
 
-const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
+const userStore = useUserStore();
+const { currentUsername, isLoggedIn } = storeToRefs(userStore);
+
+const isNewMember = ref(true);
+
+const refreshIsNewMember = async () => {
+  isNewMember.value = await userStore.checkNewMember(userStore.currentUserId);
+}
+
+onMounted(async () => {
+  await refreshIsNewMember();
+})
 </script>
 
 <template>
   <main>
+    <h1>Home Page</h1>
     <section>
       <h1 v-if="isLoggedIn">Welcome {{ currentUsername }}!</h1>
       <h1 v-else>Please login!</h1>
     </section>
     <section v-if="isLoggedIn">
-      <GroupView />
+      <PermissionForm v-if="isNewMember" @selected-permissions="refreshIsNewMember" />
+      <GroupView v-else/>
     </section>
   </main>
 </template>

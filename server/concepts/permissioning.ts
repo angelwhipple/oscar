@@ -40,6 +40,16 @@ export default class PermissioningConcept {
     return { msg: "Successfully removed member!" };
   }
 
+  async getPrivileges(user: ObjectId) {
+    const _id = await this.organizers.readOne({ user });
+    return _id ? "organizer" : "member";
+  }
+
+  async checkUserIsNewMember(user: ObjectId) {
+    const _id = await this.members.readOne({ user });
+    return !_id;
+  }
+
   async assertUserIsOrganizer(u: ObjectId) {
     const _id = await this.organizers.readOne({ user: u });
     if (!_id) {
