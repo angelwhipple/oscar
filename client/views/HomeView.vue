@@ -2,8 +2,17 @@
 import { useUserStore } from "@/stores/user";
 import GroupView from "@/views/GroupView.vue";
 import { storeToRefs } from "pinia";
+import { onMounted, ref } from "vue";
+import PermissionForm from "@/components/Permission/PermissionForm.vue";
 
-const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
+const userStore = useUserStore();
+const { currentUsername, isLoggedIn } = storeToRefs(userStore);
+
+const isNewMember = ref(true);
+
+onMounted(async () => {
+  isNewMember.value = await userStore.checkNewMember(userStore.currentUserId);
+})
 </script>
 
 <template>
@@ -14,7 +23,8 @@ const { currentUsername, isLoggedIn } = storeToRefs(useUserStore());
       <h1 v-else>Please login!</h1>
     </section>
     <section v-if="isLoggedIn">
-      <GroupView />
+      <PermissionForm v-if="isNewMember" />
+      <GroupView v-else/>
     </section>
   </main>
 </template>

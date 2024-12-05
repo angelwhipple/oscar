@@ -6,7 +6,6 @@ import { ref } from "vue";
 const userStore = useUserStore();
 
 async function selectPermission(permission: string) {
-  alert(`You selected: ${permission}`);
   if (permission == "organizer") {
     await userStore.addOrganizer();
   } else if (permission == "member") {
