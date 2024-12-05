@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import router from "@/router";
 import { useUserStore } from "@/stores/user";
-import { ref } from "vue";
+import { defineEmits } from "vue";
 
+const emit = defineEmits(["selected-permissions"])
 const userStore = useUserStore();
 
 async function selectPermission(permission: string) {
@@ -12,7 +13,7 @@ async function selectPermission(permission: string) {
     await userStore.addMember();
   }
   await userStore.refreshRole();
-  void router.push({ name: "Home" });
+  emit("selected-permissions");
 }
 </script>
 
