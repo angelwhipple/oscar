@@ -86,9 +86,15 @@ class Routes {
    */
 
   @Router.get("/permissions")
-  async getPermissions(session: SessionDoc) {
+  async getUserRole(session: SessionDoc) {
     const user = Sessioning.getUser(session);
     return await Permissioning.getPrivileges(user);
+  }
+
+  @Router.get("/permissions/new")
+  async checkNewMember(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Permissioning.checkUserIsNewMember(user);
   }
 
   @Router.post("/permissions/member")
