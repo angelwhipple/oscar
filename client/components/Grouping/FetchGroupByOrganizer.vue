@@ -1,24 +1,18 @@
 <script setup lang="ts">
-import { fetchy } from "@/utils/fetchy";
-import { defineEmits, ref } from "vue";
+import { ref } from "vue";
+import { useGroupStore } from "@/stores/group";
 
+const groupStore = useGroupStore();
 const organizerUsername = ref("");
-const emit = defineEmits(["groups-fetched"]);
 
 const fetchGroupsByOrganizer = async () => {
-  try {
-    if (!organizerUsername.value) return;
-    const groups = await fetchy(`/api/groups/organizer/${organizerUsername.value}`, "GET");
-    emit("groups-fetched", groups);
-  } catch (e) {
-    console.error("error fetching groups by organizer:", e);
-  }
+  await groupStore.filterGroupsByOrganizer(organizerUsername.value);
 };
 </script>
 
 <template>
   <div class="fetch-groups-container">
-    <h2>Fetch Groups by Organizer</h2>
+    <h2>Lookup Groups by Organizer</h2>
     <form @submit.prevent="fetchGroupsByOrganizer" class="fetch-groups-form">
       <div class="form-group">
         <label for="organizerUsername">Organizer Username:</label>

@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Grouping, Permissioning, Posting, Scheduling, Sessioning } from "./app";
+import { Authing, Friending, Permissioning, Grouping, Posting, Scheduling, Sessioning, Accounting, Messaging } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -77,6 +77,12 @@ class Routes {
   /**
    * PERMISSIONING
    */
+
+  @Router.get("/permissions")
+  async getPermissions(session: SessionDoc) {
+    const user = Sessioning.getUser(session);
+    return await Permissioning.getPrivileges(user);
+  }
 
   @Router.post("/permissions/member")
   async createMember(session: SessionDoc) {
@@ -219,9 +225,12 @@ class Routes {
   }
 
   @Router.post("/groups")
-  async createGroup(session: SessionDoc, name: string, rules: string, duration: string, frequency: string, contribution: string) {
+  async createGroup(session: SessionDoc, name: string, rules: string, frequency: string, contribution: string) {
     const user = Sessioning.getUser(session);
-    return await Grouping.create(name, rules, user, Number(duration), Number(frequency), Number(contribution));
+    const response = await Grouping.create(name, rules, user);
+    // TODO: include duration/endDate
+    await Accounting.openAccount(response.group?._id!, Number(frequency), Number(contribution));
+    return response;
   }
 
   @Router.get("/groups/:id")
@@ -231,7 +240,13 @@ class Routes {
   }
 
   @Router.get("/groups/transactions/:id")
-  async getTransactionHistory(session: SessionDoc, id: string) {
+  async getGroupTransactions(session: SessionDoc, id: string) {
+    const oid = new ObjectId(id);
+    return await Grouping.getGroupTransactions(oid);
+  }
+
+  @Router.get("/users/transactions/:id")
+  async getUserTransactions(session: SessionDoc, id: string) {
     const oid = new ObjectId(id);
     return await Grouping.getGroupTransactions(oid);
   }
@@ -239,22 +254,24 @@ class Routes {
   @Router.patch("/groups/transactions/contribute/:id")
   async makeContribution(session: SessionDoc, id: string, amount: string) {
     const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-    return await Grouping.contribute(oid, user, Number(amount));
+    const group = new ObjectId(id);
+    await Grouping.assertUserIsMember(group, user);
+    return await Accounting.deposit(user, group, Number(amount));
   }
 
   @Router.patch("/groups/transactions/withdraw/:id")
   async makeWithdrawal(session: SessionDoc, id: string, amount: string) {
     const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-    return await Grouping.withdraw(oid, user, Number(amount));
+    const group = new ObjectId(id);
+    await Grouping.assertUserIsMember(group, user);
+    return await Accounting.withdraw(user, group, Number(amount));
   }
 
   @Router.patch("/groups/reset/:id")
   async resetCycle(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    return await Grouping.resetCycle(oid, user);
+    // return await Grouping.resetCycle(oid, user);
   }
 
   @Router.delete("/groups/:id")
@@ -263,6 +280,10 @@ class Routes {
     const oid = new ObjectId(id);
     return await Grouping.disband(oid, user);
   }
+
+  /**
+   * TRANSACTIONS
+   */
 
   /**
    * MEETINGS

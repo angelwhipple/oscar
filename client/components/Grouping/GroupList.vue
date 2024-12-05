@@ -1,42 +1,61 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
-import { defineEmits, defineProps } from "vue";
+import { computed, defineEmits, watch, ref, onMounted } from "vue";
+import { useGroupStore } from "@/stores/group";
+import { storeToRefs } from "pinia";
+import StyledButton from "@/components/Useful/StyledButton.vue";
 
-interface Group {
-  _id: string;
-  name: string;
-  organizer: string;
-}
-
-const props = defineProps<{
-  groups: Group[];
-}>();
-const emit = defineEmits(["group-selected"]);
+const emit = defineEmits(["selected-group", "create"]);
 const userStore = useUserStore();
+const groupStore = useGroupStore();
+const { allGroups } = storeToRefs(groupStore);
 
-const selectGroup = (group: Group) => {
-  emit("group-selected", group);
+const displayGroups = computed(() => {
+  return allGroups.value.filter((group) => {
+    return group.members.some((member) => member.toString() === userStore.currentUserId.toString())
+  })
+})
+
+const select = (group: string) => {
+  emit("selected-group", group);
 };
+
+const create = () => {
+  emit("create")
+}
 </script>
 
 <template>
   <div class="group-list-container">
-    <h2>Groups</h2>
+    <h2>
+      Groups
+      {{ userStore.role === 'member' ? "(Member view)" : "(Organizer view)" }}
+    </h2>
     <div class="group-list">
       <div
-        v-for="group in groups"
-        :key="group._id"
+        v-if="displayGroups.length > 0"
+        v-for="group in displayGroups"
+        :key="group._id.toString()"
         class="group-item"
-        @click="selectGroup(group)"
-        :class="{ organizer: group.organizer === userStore.currentUserId, member: group.organizer !== userStore.currentUserId }"
+        @click="select(group._id.toString())"
+        :class="{
+          organizer: group.organizer.toString() === userStore.currentUserId.toString(),
+          member: group.organizer.toString() !== userStore.currentUserId.toString() }"
       >
         <span class="group-name">{{ group.name }}</span>
       </div>
+      <div v-else>
+        <p class="opaque">You have no groups to display</p>
+      </div>
     </div>
+    <StyledButton v-if="userStore.role == 'organizer'" :on-click="create">
+      Create a new group
+    </StyledButton>
   </div>
 </template>
 
 <style scoped>
+
 .group-list-container {
   text-align: center;
   padding: 2em;

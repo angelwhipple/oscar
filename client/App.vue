@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useToastStore } from "@/stores/toast";
 import { useUserStore } from "@/stores/user";
+import { useGroupStore } from "@/stores/group";
 import { storeToRefs } from "pinia";
 import { computed, onBeforeMount } from "vue";
 import { RouterLink, RouterView, useRoute } from "vue-router";
@@ -8,6 +9,7 @@ import { RouterLink, RouterView, useRoute } from "vue-router";
 const currentRoute = useRoute();
 const currentRouteName = computed(() => currentRoute.name);
 const userStore = useUserStore();
+const groupStore = useGroupStore();
 const { isLoggedIn } = storeToRefs(userStore);
 const { toast } = storeToRefs(useToastStore());
 
@@ -15,6 +17,7 @@ const { toast } = storeToRefs(useToastStore());
 onBeforeMount(async () => {
   try {
     await userStore.updateSession();
+    await groupStore.refreshGroups();
   } catch {
     // User is not logged in
   }

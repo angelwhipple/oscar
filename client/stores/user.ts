@@ -8,6 +8,7 @@ export const useUserStore = defineStore(
   () => {
     const currentUsername = ref("");
     const currentUserId = ref(""); // New state to store the user's ID
+    const role = ref("")
 
     const isLoggedIn = computed(() => currentUsername.value !== "");
 
@@ -21,6 +22,10 @@ export const useUserStore = defineStore(
         body: { username, password },
       });
     };
+
+    const fetchUser = async (id: string) => {
+      return await fetchy(`/api/users/${id}`, "GET", { alert: false });
+    }
 
     const loginUser = async (username: string, password: string) => {
       await fetchy("/api/login", "POST", {
@@ -57,11 +62,10 @@ export const useUserStore = defineStore(
       resetStore();
     };
 
-    // Permissioning
+    // Permissions
     const addMember = async () => {
       try {
-        const response = await fetchy("/api/permissions/member", "POST");
-        return response;
+        return await fetchy("/api/permissions/member", "POST");
       } catch (error) {
         console.error("Error adding member:", error);
         throw new Error("Failed to add member");
@@ -70,13 +74,17 @@ export const useUserStore = defineStore(
 
     const addOrganizer = async () => {
       try {
-        const response = await fetchy("/api/permissions/organizer", "POST");
-        return response;
+        return await fetchy("/api/permissions/organizer", "POST");
       } catch (error) {
         console.error("Error adding organizer:", error);
         throw new Error("Failed to add organizer");
       }
     };
+
+    const refreshRole = async () => {
+      role.value = await fetchy("/api/permissions", "GET", { alert: false });
+      console.log(`Set role : ${role.value}`);
+    }
 
     return {
       currentUsername,
@@ -84,6 +92,7 @@ export const useUserStore = defineStore(
       isLoggedIn,
       createUser,
       loginUser,
+      fetchUser,
       updateSession,
       logoutUser,
       updateUserUsername,
@@ -91,6 +100,8 @@ export const useUserStore = defineStore(
       deleteUser,
       addMember,
       addOrganizer,
+      refreshRole,
+      role
     };
   },
   { persist: true },

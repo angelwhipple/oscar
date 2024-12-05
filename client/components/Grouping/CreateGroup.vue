@@ -1,45 +1,34 @@
 <script setup lang="ts">
-import { fetchy } from "@/utils/fetchy";
 import { defineEmits, ref } from "vue";
+import { useGroupStore } from "@/stores/group";
+
+const emit = defineEmits(["group-created", "cancel"]);
+const groupStore = useGroupStore();
 
 const groupName = ref("");
 const rules = ref("");
-const duration = ref("");
-const frequency = ref("");
-const contribution = ref("");
-
-const emit = defineEmits(["group-created", "cancel"]);
+const endDate = ref("");
+const frequency = ref(0);
+const contribution = ref(0);
 
 const createGroup = async () => {
-  try {
-    await fetchy("/api/groups", "POST", {
-      body: {
-        name: groupName.value,
-        rules: rules.value,
-        duration: duration.value,
-        frequency: frequency.value,
-        contribution: contribution.value,
-      },
-    });
-    groupName.value = "";
-    rules.value = "";
-    duration.value = "";
-    frequency.value = "";
-    contribution.value = "";
-    // Emit event to parent to fetch updated groups
-    emit("group-created");
-  } catch (e) {
-    console.error("error creating group:", e);
-  }
-};
-
-const cancelGroup = () => {
+  await groupStore.createGroup(groupName.value, rules.value, frequency.value, contribution.value);
   groupName.value = "";
   rules.value = "";
-  duration.value = "";
-  frequency.value = "";
-  contribution.value = "";
-  emit("cancel");
+  endDate.value = "";
+  frequency.value = 0;
+  contribution.value = 0;
+  await groupStore.refreshGroups()
+  emit('group-created');
+};
+
+const cancelCreate = () => {
+  groupName.value = "";
+  rules.value = "";
+  endDate.value = "";
+  frequency.value = 0;
+  contribution.value = 0;
+  emit('cancel');
 };
 </script>
 
@@ -58,13 +47,8 @@ const cancelGroup = () => {
       </div>
 
       <div class="form-group">
-        <label for="capacity">Duration:</label>
-        <input id="capacity" type="number" v-model="duration" required class="input-field" />
-      </div>
-
-      <div class="form-group">
-        <label for="frequency">Frequency of Contribution (in weeks):</label>
-        <input id="frequency" type="text" v-model="frequency" required class="input-field" />
+        <label for="frequency">Contribution Frequency (in weeks):</label>
+        <input id="frequency" type="number" min="1" v-model="frequency" required class="input-field" />
       </div>
 
       <div class="form-group">
@@ -72,9 +56,14 @@ const cancelGroup = () => {
         <input id="contribution" type="number" v-model="contribution" required class="input-field" />
       </div>
 
+<!--      <div class="form-group">-->
+<!--        <label for="capacity">End of ROSCA cycle:</label>-->
+<!--        <input id="capacity" type="date" v-model="endDate" required class="input-field" />-->
+<!--      </div>-->
+
       <div class="form-actions">
         <button type="submit" class="create-button">Create Group</button>
-        <button type="button" @click="cancelGroup()" class="cancel-button">Cancel</button>
+        <button type="button" @click="cancelCreate" class="cancel-button">Cancel</button>
       </div>
     </form>
   </div>
