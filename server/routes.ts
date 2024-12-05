@@ -36,6 +36,13 @@ class Routes {
     return await Authing.getUserByUsername(username);
   }
 
+  @Router.get("/users/id/:id")
+  @Router.validate(z.object({ id: z.string().min(1) }))
+  async getUserById(id: string) {
+    const oid = new ObjectId(id);
+    return await Authing.getUserById(oid);
+  }
+
   @Router.post("/users")
   async createUser(session: SessionDoc, username: string, password: string) {
     Sessioning.isLoggedOut(session);

@@ -17,7 +17,7 @@ const renameGroupName = ref("");
 const contributionAmount = ref("");
 const withdrawalAmount = ref("");
 
-const memberUsernames = ref([]); //to hold user names of members
+const memberUsernames = ref<string[]>([]); //to hold user names of members
 
 import { onMounted, watch } from "vue";
 
@@ -33,8 +33,10 @@ const fetchBalance = async () => {
 const fetchMemberUsernames = async () => {
   if (!props.group || !props.group.members) return;
   memberUsernames.value = await Promise.all(
-    props.group.members.map(async (memberId) => {
+    props.group.members.map(async (memberId: string) => {
+      if (!memberId) return "";
       const response = await fetchy(`/api/users/id/${memberId}`, "GET");
+
       return response.username;
     }),
   );
