@@ -10,8 +10,12 @@ const { currentUsername, isLoggedIn } = storeToRefs(userStore);
 
 const isNewMember = ref(true);
 
-onMounted(async () => {
+const refreshIsNewMember = async () => {
   isNewMember.value = await userStore.checkNewMember(userStore.currentUserId);
+}
+
+onMounted(async () => {
+  await refreshIsNewMember();
 })
 </script>
 
@@ -23,7 +27,7 @@ onMounted(async () => {
       <h1 v-else>Please login!</h1>
     </section>
     <section v-if="isLoggedIn">
-      <PermissionForm v-if="isNewMember" />
+      <PermissionForm v-if="isNewMember" @selected-permissions="refreshIsNewMember" />
       <GroupView v-else/>
     </section>
   </main>
