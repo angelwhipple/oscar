@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Authing, Friending, Permissioning, Grouping, Posting, Scheduling, Sessioning, Accounting, Messaging } from "./app";
+import { Accounting, Authing, Friending, Grouping, Permissioning, Posting, Scheduling, Sessioning } from "./app";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
 import Responses from "./responses";
@@ -34,6 +34,13 @@ class Routes {
   @Router.validate(z.object({ username: z.string().min(1) }))
   async getUser(username: string) {
     return await Authing.getUserByUsername(username);
+  }
+
+  @Router.get("/users/id/:id")
+  @Router.validate(z.object({ id: z.string().min(1) }))
+  async getUserById(id: string) {
+    const oid = new ObjectId(id);
+    return await Authing.getUserById(oid);
   }
 
   @Router.post("/users")
@@ -256,7 +263,7 @@ class Routes {
     const user = Sessioning.getUser(session);
     const group = new ObjectId(id);
     await Grouping.assertUserIsMember(group, user);
-    return await Accounting.deposit(user, group, Number(amount));
+    return await Accounting.deposit(group, user, Number(amount));
   }
 
   @Router.patch("/groups/transactions/withdraw/:id")
@@ -264,7 +271,7 @@ class Routes {
     const user = Sessioning.getUser(session);
     const group = new ObjectId(id);
     await Grouping.assertUserIsMember(group, user);
-    return await Accounting.withdraw(user, group, Number(amount));
+    return await Accounting.withdraw(group, user, Number(amount));
   }
 
   @Router.patch("/groups/reset/:id")
@@ -284,7 +291,11 @@ class Routes {
   /**
    * TRANSACTIONS
    */
-
+  @Router.get("/groups/balance/:id")
+  async getGroupBalance(session: SessionDoc, id: string) {
+    const group = new ObjectId(id);
+    return await Accounting.getAccountBalance(group);
+  }
   /**
    * MEETINGS
    */
