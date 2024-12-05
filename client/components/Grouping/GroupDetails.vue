@@ -1,11 +1,8 @@
 <script setup lang="ts">
+import { useGroupStore } from "@/stores/group";
+import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { defineEmits, defineProps, ref } from "vue";
-import NotifyingButton from "../Notifying/NotifyingButton.vue";
-import StyledButton from "@/components/Useful/StyledButton.vue";
-import AddMember from "./AddMembers.vue";
-import { useUserStore } from "@/stores/user";
-import { useGroupStore } from "@/stores/group";
 
 const props = defineProps({ group: Object });
 const emit = defineEmits(["group-updated", "clear-selected"]);
@@ -15,6 +12,29 @@ const groupStore = useGroupStore();
 const renameGroupName = ref("");
 const contributionAmount = ref("");
 const withdrawalAmount = ref("");
+
+import { onMounted, watch } from "vue";
+
+const balance = ref(0);
+
+const fetchBalance = async () => {
+  if (!props.group) return;
+  const response = await fetchy(`/api/groups/balance/${props.group._id}`, "GET");
+  balance.value = response.balance;
+};
+
+// Fetch balance on component load
+onMounted(() => {
+  fetchBalance();
+});
+
+// Watch for updates to the group and refetch balance
+watch(
+  () => props.group,
+  () => {
+    fetchBalance();
+  },
+);
 
 const renameGroup = async () => {
   if (!props.group) return;
@@ -32,6 +52,7 @@ const contribute = async () => {
     });
     contributionAmount.value = "";
     emit("group-updated");
+    fetchBalance(); // Update balance
   } catch (e) {}
 };
 
@@ -43,67 +64,73 @@ const withdraw = async () => {
     });
     withdrawalAmount.value = "";
     emit("group-updated");
+    fetchBalance(); // Update balance
   } catch (e) {}
 };
 
 const clearSelectedGroup = () => {
   emit("clear-selected");
-}
+};
 </script>
 
 <template>
   <body class="page">
     <div class="manage-group-container">
-    <h3 class="group-title">Group: {{ group?.name }}</h3>
+      <h3 class="group-title">Group: {{ group?.name }}</h3>
 
-    <div class="manage-section" v-if="userStore.role === 'organizer'">
-      <h4>Rename Group</h4>
-      <form @submit.prevent="renameGroup" class="manage-form">
-        <label for="renameGroupName" class="form-label">New Group Name:</label>
-        <input id="renameGroupName" v-model="renameGroupName" required class="input-field" />
-        <button type="submit" class="action-button rename-button">Rename Group</button>
-      </form>
+      <div class="manage-section" v-if="userStore.role === 'organizer'">
+        <h4>Rename Group</h4>
+        <form @submit.prevent="renameGroup" class="manage-form">
+          <label for="renameGroupName" class="form-label">New Group Name:</label>
+          <input id="renameGroupName" v-model="renameGroupName" required class="input-field" />
+          <button type="submit" class="action-button rename-button">Rename Group</button>
+        </form>
+      </div>
+
+      <div class="manage-section">
+        <h4>Members</h4>
+        <ul class="member-list">
+          <li v-for="member in group?.members" :key="member" class="member-item">
+            {{ member }}
+          </li>
+        </ul>
+      </div>
+
+      <AddMember v-if="userStore.role === 'organizer'" :groupId="props.group?._id" @member-added="emit('group-updated')" />
+
+      <div class="manage-section">
+        <h4>Contribute</h4>
+        <form @submit.prevent="contribute" class="manage-form">
+          <label for="contributionAmount" class="form-label">Amount:</label>
+          <input id="contributionAmount" type="number" v-model="contributionAmount" required class="input-field" />
+          <button type="submit" class="action-button contribute-button">Contribute</button>
+        </form>
+      </div>
+
+      <div class="manage-section" v-if="userStore.role === 'organizer'">
+        <h4>Withdraw</h4>
+        <form @submit.prevent="withdraw" class="manage-form">
+          <label for="withdrawalAmount" class="form-label">Amount:</label>
+          <input id="withdrawalAmount" type="number" v-model="withdrawalAmount" required class="input-field" />
+          <button type="submit" class="action-button withdraw-button">Withdraw</button>
+        </form>
+      </div>
+
+      <div class="balance-container">
+        <h4>Current Balance :</h4>
+        <p class="balance-circle">
+          <strong>${{ balance }}</strong>
+        </p>
+      </div>
     </div>
-
-    <div class="manage-section">
-      <h4>Members</h4>
-      <ul class="member-list">
-        <li v-for="member in group?.members" :key="member" class="member-item">
-          {{ member }}
-        </li>
-      </ul>
-    </div>
-
-    <AddMember v-if="userStore.role === 'organizer'" :groupId="props.group?._id" @member-added="emit('group-updated')" />
-
-    <div class="manage-section">
-      <h4>Contribute</h4>
-      <form @submit.prevent="contribute" class="manage-form">
-        <label for="contributionAmount" class="form-label">Amount:</label>
-        <input id="contributionAmount" type="number" v-model="contributionAmount" required class="input-field" />
-        <button type="submit" class="action-button contribute-button">Contribute</button>
-      </form>
-    </div>
-
-    <div class="manage-section">
-      <h4>Withdraw</h4>
-      <form @submit.prevent="withdraw" class="manage-form">
-        <label for="withdrawalAmount" class="form-label">Amount:</label>
-        <input id="withdrawalAmount" type="number" v-model="withdrawalAmount" required class="input-field" />
-        <button type="submit" class="action-button withdraw-button">Withdraw</button>
-      </form>
-    </div>
-  </div>
-  <NotifyingButton />
-  <StyledButton :on-click="clearSelectedGroup">
-    Back
-  </StyledButton>
+    <NotifyingButton />
+    <StyledButton :on-click="clearSelectedGroup"> Back </StyledButton>
   </body>
 </template>
 
 <style scoped>
 .page {
-  width: 100%;
+  /* width: 100%; */
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -198,6 +225,26 @@ const clearSelectedGroup = () => {
 
 .withdraw-button:hover {
   background-color: #e0a800;
+}
+
+.balance-container {
+  flex: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.balance-circle {
+  width: 200px;
+  height: 200px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  border: 1px solid #ccc;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  background-color: #d9d9d9;
 }
 
 .member-list {
