@@ -1,19 +1,19 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { AlreadyExistsError, BadValuesError, NotAllowedError, NotFoundError } from "./errors";
+import { NotFoundError } from "./errors";
 
 export interface AccountDoc extends BaseDoc {
-  value: number
-  depositFrequency: number // in weeks
-  depositAmount: number
-  group: ObjectId // a Group ID
-  expirationDate: Date
+  value: number;
+  depositFrequency: number; // in weeks
+  depositAmount: number;
+  group: ObjectId; // a Group ID
+  expirationDate: Date;
 }
 
 export interface TransactionDoc extends BaseDoc {
-  account: ObjectId
-  user: ObjectId
-  amount: number // can be + or -
+  account: ObjectId;
+  user: ObjectId;
+  amount: number; // can be + or -
 }
 
 /**
@@ -30,18 +30,18 @@ export default class AccountingConcept {
 
   async openAccount(group: ObjectId, depositFrequency: number, depositAmount: number) {
     const id = await this.accounts.createOne({ group, depositFrequency, depositAmount });
-    return { msg: `Opened new shared bank account`, account: await this.accounts.readOne({ id })}
+    return { msg: `Opened new shared bank account`, account: await this.accounts.readOne({ id }) };
   }
 
   async deposit(group: ObjectId, user: ObjectId, amount: number) {
     const account = await this.getAccountByGroup(group);
-    const _id = await this.transactions.createOne({ account: account._id, user, amount })
+    const _id = await this.transactions.createOne({ account: account._id, user, amount });
     return { msg: `${user} paid $${amount} to account ${account._id}`, transaction: await this.transactions.readOne({ _id }) };
   }
 
   async withdraw(group: ObjectId, user: ObjectId, amount: number) {
     const account = await this.getAccountByGroup(group);
-    const _id = await this.transactions.createOne({ account: account._id, user, amount: -1 * amount })
+    const _id = await this.transactions.createOne({ account: account._id, user, amount: -1 * amount });
     return { msg: `${user} withdrew $${amount} from account ${account._id}`, transaction: await this.transactions.readOne({ _id }) };
   }
 
@@ -77,5 +77,12 @@ export default class AccountingConcept {
       throw new NotFoundError(`Account ${_id} doesn't exist!`);
     }
     return account;
+  }
+  //Get Account Balance
+  async getAccountBalance(group: ObjectId) {
+    const account = await this.getAccountByGroup(group);
+    const transactions = await this.transactions.readMany({ account: account._id });
+    const balance = transactions.reduce((total, transaction) => total + transaction.amount, 0);
+    return { balance };
   }
 }
