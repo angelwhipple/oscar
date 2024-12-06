@@ -166,7 +166,7 @@ const generateLotteryWinner = () => {
 
         <div class="deadline-section">
           <h4>Deadline for Next Contribution</h4>
-          <p>November 27th, 20XX -- sample text</p>
+          <p>Dec 27, 2024</p>
         </div>
 
         <div class="add-user-section">
