@@ -1,46 +1,60 @@
-//Messaging Component
 <script setup lang="ts">
 import { fetchy } from "@/utils/fetchy";
-import { onMounted, ref } from "vue";
+import { onMounted, ref, watch } from "vue";
 
-const props = defineProps(["groupId"]);
+const props = defineProps<{
+  groupId: string;
+  message: { _id: string; content: string; sender: string };
+}>();
 const messages = ref<Array<{ _id: string; content: string; sender: string }>>([]);
 const emit = defineEmits(["refreshMessages"]);
 const error = ref<string | null>(null);
+const loaded = ref(false);
 
-async function fetchMessages(): Promise<void> {
+async function fetchMessages(groupId: string) {
+  loaded.value = false;
   try {
-    messages.value = await fetchy(`/api/messages/group/${props.groupId}`, "GET");
-  } catch (error) {
-    console.error("Failed to fetch messages:", error);
-    messages.value = [];
-  }
-}
-async function deleteMessage(messageId: string): Promise<void> {
-  try {
-    await fetchy(`/api/messages/${messageId}`, "DELETE");
-    await fetchMessages();
-  } catch (error) {
-    console.error("Failed to delete message:", error);
+    const response = await fetchy(`/api/messages/group/${groupId}`, "GET");
+    messages.value = response;
+    error.value = null;
+  } catch (err) {
+    console.error("Failed to load");
+  } finally {
+    loaded.value = true;
   }
 }
 
 onMounted(() => {
-  fetchMessages().catch((error) => {
-    console.error("Error in onMounted while fetching messages:", error);
+  fetchMessages(props.groupId).catch((err) => {
+    console.error("Error in onMounted while fetching messages:", err);
   });
 });
+
+watch(
+  () => props.groupId,
+  (newGroupId) => {
+    fetchMessages(newGroupId).catch((err) => {
+      console.error("Error while watching groupId changes:", err);
+    });
+  },
+);
 </script>
 
 <template>
   <div>
     <h3>Messages</h3>
-    <div v-for="message in messages" :key="message._id" class="message-item">
-      <p>
-        <strong>{{ message.sender }}</strong
-        >: {{ message.content }}
-      </p>
-      <button class="delete-btn" @click="deleteMessage(message._id)">Delete</button>
+    <div v-if="error" class="error-message">
+      {{ error }}
+    </div>
+    <div v-if="!loaded && !error" class="loading-message">Loading messages...</div>
+    <div v-else>
+      <div v-if="messages.length === 0" class="no-messages">No messages in this group.</div>
+      <div v-for="message in messages" :key="message._id" class="message-item">
+        <p>
+          <strong>{{ message.sender }}</strong
+          >: {{ message.content }}
+        </p>
+      </div>
     </div>
   </div>
 </template>
@@ -48,6 +62,8 @@ onMounted(() => {
 <style scoped>
 .message-item {
   margin-bottom: 10px;
+  padding: 5px;
+  border-bottom: 1px solid #ddd;
 }
 
 .delete-btn {
@@ -55,5 +71,24 @@ onMounted(() => {
   border: none;
   cursor: pointer;
   color: red;
+  font-weight: bold;
+}
+
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.loading-message {
+  color: #888;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+
+.no-messages {
+  color: #555;
+  font-size: 14px;
+  margin-bottom: 10px;
 }
 </style>

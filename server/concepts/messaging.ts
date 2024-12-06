@@ -1,11 +1,11 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { AlreadyExistsError, BadValuesError, NotAllowedError, NotFoundError } from "./errors";
+import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface MessageDoc extends BaseDoc {
-  content: string
-  sender: ObjectId
-  group: ObjectId
+  content: string;
+  sender: ObjectId;
+  group: ObjectId;
 }
 
 /**
@@ -20,19 +20,19 @@ export default class MessagingConcept {
 
   async sendMessage(group: ObjectId, content: string, sender: ObjectId) {
     const _id = await this.messages.createOne({ sender, content });
-    return { msg: `Sent new message to ${group}`, message: await this.messages.readOne({ _id }) }
+    return { msg: `Sent new message to ${group}`, message: await this.messages.readOne({ _id }) };
   }
 
   async editMessage(_id: ObjectId, content: string, sender: ObjectId) {
     await this.assertUserIsSender(_id, sender);
     await this.messages.partialUpdateOne({ _id }, { content });
-    return { msg: `Edited message ${_id}`, message: await this.messages.readOne({ _id }) }
+    return { msg: `Edited message ${_id}`, message: await this.messages.readOne({ _id }) };
   }
 
   async unsendMessage(_id: ObjectId, sender: ObjectId) {
     await this.assertUserIsSender(_id, sender);
     await this.messages.deleteOne({ _id });
-    return { msg: `Unsent message ${_id}` }
+    return { msg: `Unsent message ${_id}` };
   }
 
   async assertUserIsSender(_id: ObjectId, user: ObjectId) {

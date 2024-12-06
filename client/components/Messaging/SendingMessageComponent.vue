@@ -1,8 +1,8 @@
-//sending message component
 <script setup lang="ts">
 import { fetchy } from "@/utils/fetchy";
 import { ref } from "vue";
 
+const messages = ref<Array<{ _id: string; content: string; sender: string }>>([]);
 const props = defineProps(["groupId"]);
 const emit = defineEmits(["refreshMessages"]);
 const messageContent = ref("");

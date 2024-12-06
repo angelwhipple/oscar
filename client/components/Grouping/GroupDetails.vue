@@ -35,7 +35,7 @@ const fetchMemberUsernames = async () => {
   memberUsernames.value = await Promise.all(
     props.group.members.map(async (memberId: string) => {
       if (!memberId) return "";
-      const response = await fetchy(`/api/users/id/${memberId}`, "GET");
+      const response = await fetchy(`/api/users/${memberId}`, "GET");
 
       return response.username;
     }),

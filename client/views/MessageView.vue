@@ -1,10 +1,9 @@
-//Message View
 <script setup lang="ts">
-import MessageListComponent from "@/components/Messaging/MessageListComponent.vue"; //display all groups
-import MessagingComponent from "@/components/Messaging/MessagingComponent.vue"; //display each messae
-import SendingMessageComponent from "@/components/Messaging/SendingMessageComponent.vue"; //sends message
+import MessageListComponent from "@/components/Messaging/MessageListComponent.vue";
+import MessageComponent from "@/components/Messaging/MessagingComponent.vue";
+import SendingMessageComponent from "@/components/Messaging/SendingMessageComponent.vue";
 import { fetchy } from "@/utils/fetchy";
-import { onBeforeMount, ref } from "vue";
+import { ref } from "vue";
 
 const groups = ref<Array<{ _id: string; name: string }>>([]);
 const selectedGroupId = ref<string | null>(null);
@@ -22,27 +21,27 @@ async function fetchGroups() {
 
 async function fetchMessages(groupId: string) {
   try {
-    loaded.value = false;
-    messages.value = await fetchy(`/api/messages/group/${groupId}`, "GET");
+    loaded.value = false; // Indicate loading
+    const response = await fetchy(`/api/messages/group/${groupId}`, "GET");
+    messages.value = response; // Update messages list
   } catch (error) {
     console.error("Failed to fetch messages:", error);
-    messages.value = [];
+    messages.value = []; // Clear messages on error
   } finally {
-    loaded.value = true;
+    loaded.value = true; // Loading complete
   }
 }
 
 function handleGroupSelection(groupId: string) {
-  selectedGroupId.value = groupId;
+  selectedGroupId.value = groupId; // Update the selected group
   fetchMessages(groupId).catch((error) => {
     console.error("Failed to fetch messages after selecting group:", error);
   });
 }
 
-onBeforeMount(() => {
-  fetchGroups().catch((error) => {
-    console.error("Error in onBeforeMount while fetching groups:", error);
-  });
+// Fetch groups on component mount
+fetchGroups().catch((error) => {
+  console.error("Error in onBeforeMount while fetching groups:", error);
 });
 </script>
 
@@ -50,13 +49,19 @@ onBeforeMount(() => {
   <section>
     <div class="main-container">
       <aside class="sidebar">
+        <!-- Message List Component -->
         <MessageListComponent :groups="groups" @selectGroup="handleGroupSelection" />
       </aside>
+
       <section class="messages-section">
         <h1>Messages</h1>
+
+        <!-- Show a message if no group is selected -->
         <div v-if="!selectedGroupId" class="nonSelectedUserInterface">
           <h3>Please select a group to view messages</h3>
         </div>
+
+        <!-- Show messages and send message form if a group is selected -->
         <div v-if="selectedGroupId">
           <section v-if="messages.length === 0 && loaded">
             <p>No messages in this group</p>
@@ -64,10 +69,10 @@ onBeforeMount(() => {
           <section v-if="!loaded">
             <p>Loading messages...</p>
           </section>
-          <div v-for="message in messages" :key="message._id" class="message-container">
-            <MessagingComponent :message="message" @refreshMessages="fetchMessages(selectedGroupId)" />
-          </div>
-          <SendingMessageComponent :groupId="selectedGroupId" @refreshMessages="fetchMessages(selectedGroupId)" class="send-message" />
+          <article v-for="message in messages" :key="message._id">
+            <MessageComponent :groupId="selectedGroupId" :message="message" />
+          </article>
+          <SendingMessageComponent :groupId="selectedGroupId" @refreshMessages="fetchMessages(selectedGroupId)" />
         </div>
       </section>
     </div>
