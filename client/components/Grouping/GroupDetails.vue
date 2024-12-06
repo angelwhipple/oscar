@@ -3,9 +3,8 @@ import { useGroupStore } from "@/stores/group";
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
 import { defineEmits, defineProps, ref } from "vue";
-
-import StyledButton from "@/components/Useful/StyledButton.vue";
 import NotifyingButton from "../Notifying/NotifyingButton.vue";
+import StyledButton from "../Useful/StyledButton.vue";
 import AddMember from "./AddMembers.vue";
 
 const props = defineProps({ group: Object });
@@ -17,11 +16,15 @@ const renameGroupName = ref("");
 const contributionAmount = ref("");
 const withdrawalAmount = ref("");
 
+const draftedMembers = ref<string[]>([]);
+const lotteryWinner = ref<string | null>(null);
+
 const memberUsernames = ref<string[]>([]); //to hold user names of members
 
 import { onMounted, watch } from "vue";
 
 const balance = ref(0);
+const amountPerContribution = ref(0);
 
 const fetchBalance = async () => {
   if (!props.group) return;
@@ -29,6 +32,7 @@ const fetchBalance = async () => {
   balance.value = response.balance;
 };
 
+//fetch usernames of members
 //fetch usernames of members
 const fetchMemberUsernames = async () => {
   if (!props.group || !props.group.members) return;
@@ -92,215 +96,261 @@ const clearSelectedGroup = () => {
   emit("clear-selected");
   fetchBalance();
 };
+
+const incrementBalance = async () => {
+  try {
+    if (!props.group) return;
+    await fetchy(`/api/groups/transactions/contribute/${props.group._id}`, "PATCH", {
+      body: { amount: amountPerContribution.value },
+    });
+    emit("group-updated");
+    fetchBalance(); // Update balance
+  } catch (e) {}
+};
+
+// OPTIONAL FEATURES: //
+const decrementBalance = async () => {
+  try {
+    if (!props.group) return;
+    await fetchy(`/api/groups/transactions/withdraw/${props.group._id}`, "PATCH", {
+      body: { amount: amountPerContribution.value },
+    });
+    emit("group-updated");
+    fetchBalance(); // Update balance
+  } catch (e) {}
+};
+
+const generateLotteryWinner = () => {
+  const eligibleMembers = memberUsernames.value.filter((username) => !draftedMembers.value.includes(username));
+
+  if (eligibleMembers.length === 0) {
+    draftedMembers.value = [];
+    lotteryWinner.value = null;
+    return;
+  }
+
+  const winner = eligibleMembers[Math.floor(Math.random() * eligibleMembers.length)];
+  draftedMembers.value.push(winner);
+  lotteryWinner.value = winner;
+};
 </script>
 
 <template>
   <body class="page">
     <div class="manage-group-container">
-      <h3 class="group-title">Group: {{ group?.name }}</h3>
+      <h3 class="group-title">Name of Group: {{ group?.name }}</h3>
 
-      <div class="balance-container">
-        <!-- <h4>Current Balance :</h4> -->
-        <p class="balance-circle">
-          Current <br />
-          Balance<br />
-          <br />
-          <strong> ${{ balance }}</strong>
-        </p>
+      <div class="layout">
+        <!-- Left Section -->
+        <div class="left-section">
+          <h4>Group Members</h4>
+          <ul class="member-list">
+            <li v-for="username in memberUsernames" :key="username" class="member-item">
+              <span>{{ username }}</span>
+              <div class="member-actions">
+                <button class="small-button">+</button>
+                <button class="small-button">-</button>
+              </div>
+            </li>
+          </ul>
+
+          <!-- <div class="reminder-section"> -->
+          <!-- <h4>Create Custom Reminder</h4>
+            <input type="text" placeholder="Enter Message" class="input-field" />
+            <button class="action-button">Send to All</button> -->
+          <!-- </div> -->
+
+          <div class="sos-section">
+            <NotifyingButton />
+            <StyledButton :on-click="clearSelectedGroup"> Back </StyledButton>
+          </div>
+        </div>
+
+        <!-- Center Section -->
+        <div class="center-section">
+          <p class="balance-circle">
+            Current <br />
+            Balance<br />
+            <br />
+            <strong>${{ balance }}</strong>
+          </p>
+        </div>
+
+        <!-- Right Section -->
+        <div class="right-section">
+          <button class="action-button" @click="generateLotteryWinner">Generate Lottery Winner</button>
+          <p v-if="lotteryWinner">
+            <strong class="winner">{{ lotteryWinner }} </strong> is the winner!
+          </p>
+
+          <div class="deadline-section">
+            <h4>Deadline for Next Contribution</h4>
+            <p>November 27th, 20XX -- sample text</p>
+          </div>
+
+          <div class="add-user-section">
+            <AddMember v-if="userStore.role === 'organizer'" :groupId="props.group?._id" @member-added="emit('group-updated')" />
+          </div>
+        </div>
       </div>
 
-      <div class="manage-section">
-        <h4>Contribute</h4>
-        <form @submit.prevent="contribute" class="manage-form">
-          <label for="contributionAmount" class="form-label">Amount:</label>
-          <input id="contributionAmount" type="number" v-model="contributionAmount" required class="input-field" />
-          <button type="submit" class="action-button contribute-button">Contribute</button>
+      <!-- Bottom Actions -->
+      <div class="bottom-actions">
+        <form @submit.prevent="contribute" class="inline-form">
+          <button type="submit" class="action-button contribute-button">Contribute to Pot</button>
+          <input type="number" v-model="contributionAmount" required placeholder="Enter Amount of Money" class="input-field" />
+        </form>
+
+        <form @submit.prevent="withdraw" class="inline-form">
+          <button type="submit" class="action-button withdraw-button">Remove from Pot</button>
+          <input type="number" v-model="withdrawalAmount" required placeholder="Enter Amount of Money" class="input-field" />
         </form>
       </div>
-
-      <div class="manage-section" v-if="userStore.role === 'organizer'">
-        <h4>Withdraw</h4>
-        <form @submit.prevent="withdraw" class="manage-form">
-          <label for="withdrawalAmount" class="form-label">Amount:</label>
-          <input id="withdrawalAmount" type="number" v-model="withdrawalAmount" required class="input-field" />
-          <button type="submit" class="action-button withdraw-button">Withdraw</button>
-        </form>
-      </div>
     </div>
-
-    <!-- <div> -->
-    <div class="manage-section" v-if="userStore.role === 'organizer'">
-      <h4>Rename Group</h4>
-      <form @submit.prevent="renameGroup" class="manage-form">
-        <label for="renameGroupName" class="form-label">New Group Name:</label>
-        <input id="renameGroupName" v-model="renameGroupName" required class="input-field" />
-        <button type="submit" class="action-button rename-button">Rename Group</button>
-      </form>
-    </div>
-
-    <div class="manage-section">
-      <h4>Members</h4>
-      <ul class="member-list">
-        <!-- <li v-for="member in group?.members" :key="member" class="member-item">
-          {{ member }}
-        </li> -->
-        <li v-for="username in memberUsernames" :key="username" class="member-item">
-          {{ username }}
-        </li>
-      </ul>
-    </div>
-
-    <AddMember v-if="userStore.role === 'organizer'" :groupId="props.group?._id" @member-added="emit('group-updated')" />
-    <!-- </div> -->
-
-    <NotifyingButton />
-
-    <StyledButton :on-click="clearSelectedGroup"> Back </StyledButton>
   </body>
 </template>
 
 <style scoped>
 .page {
-  /* width: 100%; */
   display: flex;
-  flex-direction: column;
   justify-content: center;
-  align-items: center;
-  row-gap: 20px;
+  padding: 20px;
+  background-color: #f5f7fa;
 }
 
 .manage-group-container {
-  width: 50%;
-  margin: 0 auto;
-  padding: 2.5em;
-  border: 1px solid #e0e0e0;
-  border-radius: 12px;
+  width: 100%;
+  max-width: 1000px;
+  padding: 20px;
   background-color: #ffffff;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-
+  border: 1px solid #ddd;
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
 }
 
 .group-title {
-  font-size: 1.5rem;
+  font-size: 1.8rem;
   font-weight: bold;
-  margin-bottom: 1.5em;
-  color: #333;
+  margin-bottom: 20px;
+  color: #2c3e50;
+  text-align: center;
 }
 
-.manage-section {
-  margin-bottom: 2em;
-}
-
-.manage-form {
+.layout {
   display: flex;
-  flex-direction: row;
-  gap: 0.25em;
-}
-
-.form-label {
-  font-weight: bold;
-  margin-bottom: 0.5em;
-}
-
-.input-field {
-  padding: 0.75em;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  font-size: 1rem;
-  transition: border-color 0.3s ease;
-}
-
-.input-field:focus {
-  border-color: #007bff;
-  outline: none;
-}
-
-.action-button {
-  padding: 0.75em 1.5em;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  color: #fff;
-}
-
-.rename-button {
-  background-color: #007bff;
-}
-
-.rename-button:hover {
-  background-color: #0056b3;
-}
-
-.remove-button {
-  background-color: #dc3545;
-  padding: 0.5em 1em;
-  margin-left: 1em;
-}
-
-.remove-button:hover {
-  background-color: #c82333;
-}
-
-.contribute-button {
-  background-color: #28a745;
-}
-
-.contribute-button:hover {
-  background-color: #218838;
-}
-
-.withdraw-button {
-  background-color: #ffc107;
-}
-
-.withdraw-button:hover {
-  background-color: #e0a800;
-}
-
-.balance-container {
-  flex: 2;
-  display: flex;
+  justify-content: space-between;
   align-items: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.left-section,
+.right-section {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.center-section {
+  flex: 0 0 250px;
+  display: flex;
   justify-content: center;
+  align-items: center;
 }
 
 .balance-circle {
   width: 200px;
   height: 200px;
   border-radius: 50%;
+  border: 3px solid #3498db;
+  background-color: #ecf0f1;
   display: flex;
   flex-direction: column;
-  align-items: center;
   justify-content: center;
   align-items: center;
-  /* height: 100px; */
-  font-size: 20px;
+  text-align: center;
+  font-size: 1.2rem;
+  color: #2980b9;
+}
+
+.reminder-section,
+.sos-section,
+.deadline-section,
+.add-user-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.input-field {
+  padding: 10px;
   border: 1px solid #ccc;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  background-color: #d9d9d9;
+  border-radius: 8px;
+  font-size: 1rem;
+}
+
+.action-button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  color: white;
+  background-color: #3498db;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.action-button:hover {
+  background-color: #2980b9;
+}
+
+.bottom-actions {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.inline-form {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .member-list {
-  list-style-type: none;
+  list-style: none;
   padding: 0;
 }
 
 .member-item {
   display: flex;
+  justify-content: space-between;
   align-items: center;
-  margin: 0.75em 0;
-  padding: 0.75em;
-  border: 1px solid #e0e0e0;
+  padding: 10px;
+  border: 1px solid #ddd;
   border-radius: 8px;
+  background-color: #ffffff;
+}
+
+.small-button {
+  padding: 5px 10px;
+  border: none;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  background-color: #ccc;
+  cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.member-item:hover {
-  background-color: #f9f9f9;
+.small-button:hover {
+  background-color: #aaa;
+}
+
+.winner {
+  color: #27ae60;
 }
 </style>
