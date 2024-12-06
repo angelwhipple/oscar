@@ -5,7 +5,7 @@ import { useGroupStore } from "@/stores/group";
 import { storeToRefs } from "pinia";
 import StyledButton from "@/components/Useful/StyledButton.vue";
 
-const emit = defineEmits(["selected-group", "create"]);
+const emit = defineEmits(["selected-group", "create", "join"]);
 const userStore = useUserStore();
 const groupStore = useGroupStore();
 const { allGroups } = storeToRefs(groupStore);
@@ -20,9 +20,9 @@ const select = (group: string) => {
   emit("selected-group", group);
 };
 
-const create = () => {
-  emit("create")
-}
+const create = () => emit("create")
+
+const join = () => emit("join")
 </script>
 
 <template>
@@ -50,6 +50,9 @@ const create = () => {
     </div>
     <StyledButton v-if="userStore.role == 'organizer'" :on-click="create">
       Create a new group
+    </StyledButton>
+    <StyledButton v-else :on-click="join">
+      Discover groups
     </StyledButton>
   </div>
 </template>

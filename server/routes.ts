@@ -110,6 +110,7 @@ class Routes {
     await Permissioning.addMember(user);
     return await Permissioning.addOrganizer(user);
   }
+
   /**
    * NOTIFYING
    */
@@ -296,12 +297,6 @@ class Routes {
     return await Accounting.withdraw(group, user, Number(amount));
   }
 
-  @Router.patch("/groups/reset/:id")
-  async resetCycle(session: SessionDoc, id: string) {
-    const user = Sessioning.getUser(session);
-    const oid = new ObjectId(id);
-  }
-
   @Router.delete("/groups/:id")
   async disbandGroup(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
@@ -309,14 +304,56 @@ class Routes {
     return await Grouping.disband(oid, user);
   }
 
+  @Router.post("/groups/invitations/:id")
+  async invite(session: SessionDoc, id: string, recipient: string) {
+    const organizerId = Sessioning.getUser(session);
+    const groupId = new ObjectId(id);
+    const recipientId = (await Authing.getUserByUsername(recipient))._id;
+    return await Grouping.sendGroupInvitation(groupId, organizerId, recipientId);
+  }
+
+  @Router.get("/groups/invitations/:id")
+  async fetchInvitation(id: string) {
+    const oid = new ObjectId(id);
+    return await Grouping.getInvitationById(oid);
+  }
+
+  @Router.get("/groups/invitations/user/:id")
+  async getUserInvitations(session: SessionDoc, id: string) {
+    const user = new ObjectId(id);
+    return await Grouping.getInvitationsByRecipient(user);
+  }
+
+  @Router.get("/groups/invitations/group/:id")
+  async getGroupInvitations(session: SessionDoc, id: string) {
+    const oid = new ObjectId(id);
+    return await Grouping.getInvitationsByGroup(oid);
+  }
+
+  @Router.patch("/groups/invitations/accept/:id")
+  async acceptInvitation(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    return await Grouping.acceptGroupInvitation(oid, user)
+  }
+
+  @Router.patch("/groups/invitations/decline/:id")
+  async declineInvitation(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const oid = new ObjectId(id);
+    return await Grouping.declineGroupInvitation(oid, user)
+  }
+
   /**
    * TRANSACTIONS
    */
+
   @Router.get("/groups/balance/:id")
   async getGroupBalance(session: SessionDoc, id: string) {
     const group = new ObjectId(id);
     return await Accounting.getAccountBalance(group);
   }
+
   /**
    * MEETINGS
    */

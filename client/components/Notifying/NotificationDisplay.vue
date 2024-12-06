@@ -8,7 +8,7 @@ let loaded = ref(false);
 
 async function displayNotifications() {
   try {
-    notifications.value = await fetchy(`/api/notifying/display`, "GET");
+    notifications.value = await fetchy(`/api/notifying/display`, "GET", { alert: false });
   } catch (e) {
     console.error(`Failed to fetch notifications: ${e}`);
   }
