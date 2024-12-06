@@ -34,7 +34,8 @@ const PaymentAction = () => {
 //changing no
 async function createNotif() {
   try {
-    await fetchy(`/api/notifying`, "POST", { body: { recipients: invitees.value, message: notification.value, action: actionType.value } });
+    await fetchy(`/api/notifying`, "POST",
+      { body: { recipients: invitees.value, message: notification.value, action: actionType.value } });
   } catch (e) {
     console.error(`Error creating notification: ${e}`);
   }
@@ -47,7 +48,7 @@ async function createNotif() {
 
 <template>
   <div class="fetch-groups-container">
-    <h2>Create a Notification for the Group</h2>
+    <h2>Create a Group Notification</h2>
     <form @submit.prevent="createNotif" class="fetch-groups-form">
       <div class="form-actions">
         <button type="button" class="action-button" @click.prevent="reminderAction">Reminder</button>

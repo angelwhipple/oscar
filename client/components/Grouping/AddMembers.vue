@@ -1,34 +1,25 @@
 <script setup lang="ts">
-import { fetchy } from "@/utils/fetchy";
+import { useGroupStore } from "@/stores/group";
 import { defineEmits, defineProps, ref } from "vue";
 
-const props = defineProps({
-  groupId: String,
-});
-const emit = defineEmits(["member-added"]);
+const props = defineProps(["groupId"]);
+const groupStore = useGroupStore();
 
 const newMember = ref("");
 
-const addMember = async () => {
-  if (!props.groupId || !newMember.value) return;
-  try {
-    await fetchy(`/api/groups/members/add/${props.groupId}`, "PATCH", {
-      body: { username: newMember.value },
-    });
-    newMember.value = "";
-    emit("member-added");
-  } catch (e) {
-    console.error(`Error adding member to group: ${e}`);
-  }
+const inviteMember = async () => {
+  if (!props.groupId) return
+  await groupStore.sendGroupInvitation(props.groupId, newMember.value);
+  newMember.value = ""
 };
 </script>
 
 <template>
   <div class="add-member-container">
-    <form @submit.prevent="addMember" class="add-member-form">
-      <label for="newMember" class="form-label">Add Member (username):</label>
-      <input id="newMember" v-model="newMember" required class="input-field" />
-      <button type="submit" class="add-button">Add Member</button>
+    <form @submit.prevent="inviteMember" class="add-member-form">
+      <label for="newMember" class="form-label">Invite a member</label>
+      <input id="newMember" v-model="newMember" required class="input-field" placeholder="Enter username" />
+      <button type="submit" class="add-button">Invite</button>
     </form>
   </div>
 </template>

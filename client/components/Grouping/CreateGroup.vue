@@ -2,7 +2,7 @@
 import { defineEmits, ref } from "vue";
 import { useGroupStore } from "@/stores/group";
 
-const emit = defineEmits(["group-created", "cancel"]);
+const emit = defineEmits(["cancel-create"]);
 const groupStore = useGroupStore();
 
 const groupName = ref("");
@@ -12,14 +12,13 @@ const frequency = ref(0);
 const contribution = ref(0);
 
 const createGroup = async () => {
-  await groupStore.createGroup(groupName.value, rules.value, frequency.value, contribution.value);
-  groupName.value = "";
-  rules.value = "";
-  endDate.value = "";
-  frequency.value = 0;
-  contribution.value = 0;
-  await groupStore.refreshGroups()
-  emit('group-created');
+    const response = await groupStore.createGroup(groupName.value, rules.value, frequency.value, contribution.value);
+    if (response.error) {
+      groupName.value = "";
+      return
+    }
+    await groupStore.refreshGroups()
+    emit('cancel-create');
 };
 
 const cancelCreate = () => {
@@ -28,7 +27,7 @@ const cancelCreate = () => {
   endDate.value = "";
   frequency.value = 0;
   contribution.value = 0;
-  emit('cancel');
+  emit('cancel-create');
 };
 </script>
 
