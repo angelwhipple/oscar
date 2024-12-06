@@ -2,7 +2,7 @@ import { ObjectId } from "mongodb";
 
 import { Router, getExpressRouter } from "./framework/router";
 
-import { Accounting, Authing, Friending, Grouping, Notifying, Permissioning, Posting, Scheduling, Sessioning } from "./app";
+import { Accounting, Authing, Friending, Grouping, Notifying, Permissioning, Posting, Scheduling, Sessioning, Messaging } from "./app";
 import { ActionItem } from "./concepts/notifying";
 import { PostOptions } from "./concepts/posting";
 import { SessionDoc } from "./concepts/sessioning";
@@ -398,6 +398,34 @@ class Routes {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
     return await Scheduling.delete(oid, user);
+  }
+
+  /**
+   * MESSAGES
+   */
+
+  @Router.post("/messages")
+  async sendMessageToGroup(session: SessionDoc, group: string, content: string) {
+    const user = Sessioning.getUser(session);
+    const groupId = new ObjectId(group);
+    await Grouping.assertUserIsMember(groupId, user);
+    return await Messaging.sendMessage(groupId, content, user);
+  }
+
+  @Router.get("/messages/group/:groupId")
+  async getGroupMessages(session: SessionDoc, groupId: string) {
+    const user = Sessioning.getUser(session);
+    const group = new ObjectId(groupId);
+    await Grouping.assertUserIsMember(group, user);
+    return await Messaging.getMessageHistory(group);
+  }
+
+  @Router.delete("/messages/:id")
+  async deleteMessage(session: SessionDoc, id: string) {
+    const user = Sessioning.getUser(session);
+    const messageId = new ObjectId(id);
+    await Messaging.assertUserIsSender(messageId, user);
+    return await Messaging.unsendMessage(messageId, user);
   }
 }
 

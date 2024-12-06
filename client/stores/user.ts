@@ -24,7 +24,7 @@ export const useUserStore = defineStore(
     };
 
     const fetchUser = async (id: string) => {
-      return await fetchy(`/api/users/${id}`, "GET", { alert: false });
+      return await fetchy(`/api/users/id/${id}`, "GET", { alert: false });
     }
 
     const loginUser = async (username: string, password: string) => {
