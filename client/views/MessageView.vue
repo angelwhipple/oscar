@@ -1,73 +1,59 @@
-//Message View
 <script setup lang="ts">
-import MessageListComponent from "@/components/Messaging/MessageListComponent.vue"; //display all groups
-import MessagingComponent from "@/components/Messaging/MessagingComponent.vue"; //display each messae
-import SendingMessageComponent from "@/components/Messaging/SendingMessageComponent.vue"; //sends message
+import ChatList from "@/components/Messaging/ChatList.vue";
+import Message from "@/components/Messaging/Message.vue";
 import { fetchy } from "@/utils/fetchy";
-import { onBeforeMount, ref } from "vue";
+import { onBeforeMount, ref, watch } from "vue";
+import { MessageDoc } from "../../server/concepts/messaging";
 
-const groups = ref<Array<{ _id: string; name: string }>>([]);
 const selectedGroupId = ref<string | null>(null);
-const messages = ref<Array<{ _id: string; content: string; sender: string }>>([]);
-const loaded = ref(false);
+const messages = ref<MessageDoc[]>([]);
+const messageContent = ref("");
 
-async function fetchGroups() {
-  try {
-    groups.value = await fetchy("/api/groups", "GET");
-  } catch (error) {
-    console.error("Failed to fetch groups:", error);
-    groups.value = [];
-  }
-}
-
-async function fetchMessages(groupId: string) {
-  try {
-    loaded.value = false;
-    messages.value = await fetchy(`/api/messages/group/${groupId}`, "GET");
-  } catch (error) {
-    console.error("Failed to fetch messages:", error);
-    messages.value = [];
-  } finally {
-    loaded.value = true;
-  }
-}
-
-function handleGroupSelection(groupId: string) {
+async function handleGroupSelection(groupId: string) {
   selectedGroupId.value = groupId;
-  fetchMessages(groupId).catch((error) => {
-    console.error("Failed to fetch messages after selecting group:", error);
-  });
+  await refreshMessages();
 }
 
-onBeforeMount(() => {
-  fetchGroups().catch((error) => {
-    console.error("Error in onBeforeMount while fetching groups:", error);
-  });
-});
+async function sendMessage() {
+  if (!messageContent.value.trim()) return;
+  try {
+    await fetchy("/api/messages", "POST", {
+      body: { group: selectedGroupId.value, content: messageContent.value }, alert: false,
+    });
+    await refreshMessages();
+    messageContent.value = "";
+  } catch (error) {
+    console.error("Failed to send message:", error);
+  }
+}
+
+const refreshMessages = async () => {
+  if (!selectedGroupId.value) return;
+  messages.value = await fetchy(`/api/messages/group/${selectedGroupId.value}`, "GET", { alert: false });
+}
+
+watch(selectedGroupId, refreshMessages);
+onBeforeMount(refreshMessages);
 </script>
 
 <template>
   <section>
     <div class="main-container">
-      <aside class="sidebar">
-        <MessageListComponent :groups="groups" @selectGroup="handleGroupSelection" />
-      </aside>
+      <ChatList @selectGroup="handleGroupSelection" />
       <section class="messages-section">
         <h1>Messages</h1>
         <div v-if="!selectedGroupId" class="nonSelectedUserInterface">
           <h3>Please select a group to view messages</h3>
         </div>
         <div v-if="selectedGroupId">
-          <section v-if="messages.length === 0 && loaded">
-            <p>No messages in this group</p>
+          <section class="message-container">
+            <p v-if="messages.length === 0">No messages to display.</p>
+            <Message v-else v-for="message in messages" :key="message._id.toString()" :message="message" @refreshMessages="refreshMessages" />
           </section>
-          <section v-if="!loaded">
-            <p>Loading messages...</p>
-          </section>
-          <div v-for="message in messages" :key="message._id" class="message-container">
-            <MessagingComponent :message="message" @refreshMessages="fetchMessages(selectedGroupId)" />
+          <div class="message-box">
+            <textarea v-model="messageContent" placeholder="Enter your message" rows="3" class="message-textarea"></textarea>
+            <button @click="sendMessage" class="send-button">Send</button>
           </div>
-          <SendingMessageComponent :groupId="selectedGroupId" @refreshMessages="fetchMessages(selectedGroupId)" class="send-message" />
         </div>
       </section>
     </div>
@@ -78,6 +64,7 @@ onBeforeMount(() => {
 .main-container {
   display: flex;
   height: calc(100vh - 80px);
+  width: 100%;
 }
 
 .sidebar {
@@ -94,6 +81,8 @@ onBeforeMount(() => {
   flex-direction: column;
   background-color: var(--white);
   height: 100%;
+  width: 80%;
+  padding: 2%;
 }
 
 .nonSelectedUserInterface {
@@ -105,6 +94,14 @@ onBeforeMount(() => {
 
 .message-container {
   margin: 10px 0;
+  height: 55vh;
+  overflow-y: scroll;
+  display: flex;
+  flex-direction: column;
+}
+
+.message-container::-webkit-scrollbar {
+  display: none;
 }
 
 .send-message {
@@ -115,5 +112,23 @@ onBeforeMount(() => {
   background-color: var(--white);
   padding: 10px;
   box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.message-box {
+  width: 100%;
+}
+
+textarea {
+  width: inherit;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
 }
 </style>

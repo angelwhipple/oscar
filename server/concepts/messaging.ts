@@ -19,7 +19,7 @@ export default class MessagingConcept {
   }
 
   async sendMessage(group: ObjectId, content: string, sender: ObjectId) {
-    const _id = await this.messages.createOne({ sender, content });
+    const _id = await this.messages.createOne({ group, sender, content });
     return { msg: `Sent new message to ${group}`, message: await this.messages.readOne({ _id }) }
   }
 

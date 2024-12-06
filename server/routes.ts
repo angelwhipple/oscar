@@ -403,6 +403,7 @@ class Routes {
   /**
    * MESSAGES
    */
+
   @Router.post("/messages")
   async sendMessageToGroup(session: SessionDoc, group: string, content: string) {
     const user = Sessioning.getUser(session);

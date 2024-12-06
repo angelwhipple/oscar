@@ -1,19 +1,21 @@
 <script setup lang="ts">
-import { fetchy } from "@/utils/fetchy";
+import { useGroupStore } from "@/stores/group";
+import { useUserStore } from "@/stores/user";
 import { onMounted, ref } from "vue";
+import { storeToRefs } from "pinia";
+import { GroupDoc } from "../../../server/concepts/grouping";
 
-const groups = ref<Array<{ _id: string; name: string }>>([]);
-const selectedGroup = ref<string | null>(null);
 const emit = defineEmits(["selectGroup", "refreshMessages"]);
 
-async function fetchGroups() {
-  try {
-    const groupResults = await fetchy("/api/groups", "GET");
-    groups.value = groupResults;
-  } catch (error) {
-    console.error("Failed to fetch groups:", error);
-    groups.value = [];
-  }
+const { allGroups } = storeToRefs(useGroupStore());
+const { currentUserId } = storeToRefs(useUserStore());
+const groups = ref<GroupDoc[]>([]);
+const selectedGroup = ref<string | null>(null);
+
+async function refreshGroups() {
+  groups.value = allGroups.value.filter((group) => {
+    return group.members.some((member) => member.toString() === currentUserId.value.toString());
+  })
 }
 
 function selectGroup(groupId: string) {
@@ -22,14 +24,14 @@ function selectGroup(groupId: string) {
   emit("refreshMessages");
 }
 
-onMounted(fetchGroups);
+onMounted(refreshGroups);
 </script>
 
 <template>
   <div class="sidebar">
     <h2>Select Group</h2>
     <div class="group-container">
-      <div class="group-block" v-for="group in groups" :key="group._id" @click="selectGroup(group._id)" :class="{ selected: group._id === selectedGroup }">
+      <div class="group-block" v-for="group in groups" :key="group._id.toString()" @click="selectGroup(group._id.toString())" :class="{ selected: group._id.toString() === selectedGroup }">
         {{ group.name }}
       </div>
     </div>
@@ -38,10 +40,13 @@ onMounted(fetchGroups);
 
 <style scoped>
 .sidebar {
-  width: 250px;
-  height: 100vh;
+  width: 20%;
   overflow-y: auto;
   padding: 20px;
+}
+
+.sidebar::-webkit-scrollbar {
+  display: none;
 }
 
 .group-container {
