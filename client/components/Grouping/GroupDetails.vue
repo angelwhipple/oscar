@@ -170,7 +170,7 @@ const generateLotteryWinner = () => {
         </div>
 
         <div class="add-user-section">
-          <AddMember v-if="userStore.role === 'organizer'" :groupId="props.group?._id" @member-added="emit('group-updated')" />
+          <AddMember v-if="userStore.role === 'organizer'" :groupId="props.group?._id" />
         </div>
       </div>
     </div>
