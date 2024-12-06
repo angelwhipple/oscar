@@ -21,7 +21,6 @@ async function refreshGroups() {
 function selectGroup(groupId: string) {
   selectedGroup.value = groupId;
   emit("selectGroup", groupId);
-  emit("refreshMessages");
 }
 
 onMounted(refreshGroups);
