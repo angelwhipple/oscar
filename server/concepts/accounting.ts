@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 import DocCollection, { BaseDoc } from "../framework/doc";
-import { NotFoundError } from "./errors";
+import { NotAllowedError, NotFoundError } from "./errors";
 
 export interface AccountDoc extends BaseDoc {
   value: number;
@@ -29,20 +29,25 @@ export default class AccountingConcept {
   }
 
   async openAccount(group: ObjectId, depositFrequency: number, depositAmount: number) {
-    const id = await this.accounts.createOne({ group, depositFrequency, depositAmount });
-    return { msg: `Opened new shared bank account`, account: await this.accounts.readOne({ id }) };
+    const id = await this.accounts.createOne({ group, depositFrequency, depositAmount, value: 0 });
+    return { msg: `Opened a new group bank account`, account: await this.accounts.readOne({ id }) };
   }
 
   async deposit(group: ObjectId, user: ObjectId, amount: number) {
     const account = await this.getAccountByGroup(group);
     const _id = await this.transactions.createOne({ account: account._id, user, amount });
-    return { msg: `${user} paid $${amount} to account ${account._id}`, transaction: await this.transactions.readOne({ _id }) };
+    await this.accounts.partialUpdateOne({ group }, { value: account.value + amount });
+    return { msg: `Added $${amount} to the pot`, transaction: await this.transactions.readOne({ _id }) };
   }
 
   async withdraw(group: ObjectId, user: ObjectId, amount: number) {
     const account = await this.getAccountByGroup(group);
+    if (account.value < amount) {
+      throw new NotAllowedError(`Cannot withdraw more than current pot value!`);
+    }
     const _id = await this.transactions.createOne({ account: account._id, user, amount: -1 * amount });
-    return { msg: `${user} withdrew $${amount} from account ${account._id}`, transaction: await this.transactions.readOne({ _id }) };
+    await this.accounts.partialUpdateOne({ group }, { value: account.value - amount });
+    return { msg: `Withdrew $${amount} from the pot`, transaction: await this.transactions.readOne({ _id }) };
   }
 
   async getAccount(_id: ObjectId) {
@@ -52,7 +57,7 @@ export default class AccountingConcept {
   async getAccountByGroup(group: ObjectId) {
     const account = await this.accounts.readOne({ group });
     if (!account) {
-      throw new NotFoundError(`Account for ROSCA group ${group} doesn't exist!`);
+      throw new NotFoundError(`Shared account for group ${group} not found.`);
     }
     return account;
   }
@@ -74,15 +79,16 @@ export default class AccountingConcept {
   async assertAccountExists(_id: ObjectId) {
     const account = await this.accounts.readOne({ _id });
     if (!account) {
-      throw new NotFoundError(`Account ${_id} doesn't exist!`);
+      throw new NotFoundError(`Shared account ${_id} not found.`);
     }
     return account;
   }
-  //Get Account Balance
+
   async getAccountBalance(group: ObjectId) {
     const account = await this.getAccountByGroup(group);
-    const transactions = await this.transactions.readMany({ account: account._id });
-    const balance = transactions.reduce((total, transaction) => total + transaction.amount, 0);
-    return { balance };
+    return { balance: account.value };
+    // const transactions = await this.transactions.readMany({ account: account._id });
+    // const balance = transactions.reduce((total, transaction) => total + transaction.amount, 0);
+    // return { balance };
   }
 }

@@ -15,7 +15,7 @@ export default class MessagingConcept {
   public readonly messages: DocCollection<MessageDoc>;
 
   constructor(collectionName: string) {
-    this.messages = new DocCollection<MessageDoc>(collectionName + "_messages");
+    this.messages = new DocCollection<MessageDoc>(collectionName);
   }
 
   async sendMessage(group: ObjectId, content: string, sender: ObjectId) {
