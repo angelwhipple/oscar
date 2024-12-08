@@ -33,7 +33,6 @@ const cancelCreate = () => {
 
 <template>
   <div class="create-group-container">
-    <h2>Create a group</h2>
     <form @submit.prevent="createGroup" class="create-group-form">
       <div class="form-group">
         <label for="groupName">Name of Group:</label>

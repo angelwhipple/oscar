@@ -24,7 +24,7 @@ export const useGroupStore = defineStore(
 
     const filterGroupsByOrganizer = async (organizer: string) => {
       try {
-        allGroups.value = await fetchy(`/api/groups/organizer/${organizer}`, "GET", { alert: false });
+        return await fetchy(`/api/groups/organizer/${organizer}`, "GET", { alert: true });
       } catch (error) {
         console.error(`Failed to fetch groups by organizer: ${error}`);
       }
@@ -69,33 +69,37 @@ export const useGroupStore = defineStore(
       }
     }
 
-    const sendGroupInvitation = async (id: string, recipient: string) => {
+    const sendGroupRequest = async (id: string, sender: string, recipient: string, type: string) => {
       try {
-        return await fetchy(`/api/groups/invitations/${id}`, "POST", { body: { recipient }, alert: true });
+        return await fetchy(`/api/groups/requests/${id}`, "POST", {
+          body: { sender, recipient, type }, alert: true
+        });
       } catch (e) {
         console.error(`Error inviting user to group: ${e}`);
         return { error: e }
       }
     }
 
-    const fetchInvitation = async (id: string) => {
-      return await fetchy(`/api/groups/invitations/${id}`, "GET", { alert: false });
+    const fetchRequest = async (id: string) => {
+      return await fetchy(`/api/groups/requests/${id}`, "GET", { alert: false });
     }
 
-    const getInvitationsByUser = async (id: string)=> {
-      return await fetchy(`/api/groups/invitations/user/${id}`, "GET", { alert: false });
+    const getRequestsByUser = async (id: string)=> {
+      return await fetchy(`/api/groups/requests/user/${id}`, "GET", { alert: false });
     }
 
-    const getInvitationsByGroup = async (id: string) => {
-      return await fetchy(`/api/groups/invitations/group/${id}`, "GET", { alert: false });
+    const getRequestsByGroup = async (id: string) => {
+      return await fetchy(`/api/groups/requests/group/${id}`, "GET", { alert: false });
     }
 
-    const acceptInvitation = async (id: string) => {
-      return await fetchy(`/api/groups/invitations/accept/${id}`, "PATCH", { alert: true });
+    const acceptRequest = async (id: string, type: string) => {
+      return await fetchy(`/api/groups/requests/accept/${id}`, "PATCH", {
+        body: { type }, alert: true
+      });
     }
 
-    const declineInvitation = async (id: string) => {
-      return await fetchy(`/api/groups/invitations/accept/${id}`, "PATCH", { alert: true });
+    const declineRequest = async (id: string) => {
+      return await fetchy(`/api/groups/requests/accept/${id}`, "PATCH", { alert: true });
     }
 
     return {
@@ -110,12 +114,12 @@ export const useGroupStore = defineStore(
       disbandGroup,
       makeContribution,
       makeWithdrawal,
-      sendGroupInvitation,
-      getInvitationsByUser,
-      getInvitationsByGroup,
-      acceptInvitation,
-      declineInvitation,
-      fetchInvitation,
+      sendGroupRequest,
+      getRequestsByUser,
+      getRequestsByGroup,
+      acceptRequest,
+      declineRequest,
+      fetchRequest,
     }
   },
   { persist: true },

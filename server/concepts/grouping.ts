@@ -9,8 +9,9 @@ export interface GroupDoc extends BaseDoc {
   members: ObjectId[];
 }
 
-export interface InvitationDoc extends BaseDoc {
+export interface RequestDoc extends BaseDoc {
   group: ObjectId;
+  sender: ObjectId;
   recipient: ObjectId;
   status: "pending" | "declined" | "accepted"
 }
@@ -20,46 +21,45 @@ export interface InvitationDoc extends BaseDoc {
  */
 export default class GroupingConcept {
   public readonly groups: DocCollection<GroupDoc>;
-  public readonly invitations: DocCollection<InvitationDoc>;
+  public readonly requests: DocCollection<RequestDoc>;
 
   constructor(collectionName: string) {
     this.groups = new DocCollection<GroupDoc>(collectionName);
-    this.invitations = new DocCollection<InvitationDoc>(collectionName + "_invitations");
+    this.requests = new DocCollection<RequestDoc>(collectionName + "_requests");
   }
 
-  async sendGroupInvitation(group: ObjectId, organizer: ObjectId, recipient: ObjectId) {
-    await this.assertUserIsOrganizer(group, organizer);
-    await this.assertUserNotMember(group, recipient);
-    await this.assertNewInvitation(group, recipient);
+  async sendGroupRequest(group: ObjectId, sender: ObjectId, recipient: ObjectId, type: string) {
+    await this.assertUserNotMember(group, (type === "invite" ? recipient : sender));
+    await this.assertNewRequest(group, sender, recipient);
     const model = await this.groups.readOne({ _id: group });
-    const _id = await this.invitations.createOne({ group, recipient, status: "pending" });
-    return { msg: `Invited user to group`, invitation: await this.invitations.readOne({ _id }) };
+    const _id = await this.requests.createOne({ group, sender, recipient, status: "pending" });
+    return { msg: `Successfully sent request`, request: await this.requests.readOne({ _id }) };
   }
 
-  async acceptGroupInvitation(_id: ObjectId, recipient: ObjectId) {
-    await this.assertUserIsInviteRecipient(_id, recipient);
-    await this.invitations.partialUpdateOne({ _id }, { status: "accepted" });
-    const invitation = await this.invitations.readOne({ _id });
+  async acceptGroupRequest(_id: ObjectId, recipient: ObjectId, type: string) {
+    await this.assertUserIsRequestRecipient(_id, recipient);
+    await this.requests.partialUpdateOne({ _id }, { status: "accepted" });
+    const invitation = await this.requests.readOne({ _id });
     const group = await this.groups.readOne({ _id: invitation!.group });
-    return await this.addMember(group!._id, recipient);
+    return await this.addMember(group!._id, (type === "invite" ? invitation!.recipient : invitation!.sender));
   }
 
-  async declineGroupInvitation(_id: ObjectId, recipient: ObjectId) {
-    await this.assertUserIsInviteRecipient(_id, recipient);
-    await this.invitations.partialUpdateOne({ _id }, { status: "declined" });
-    return { msg: `Declined group invitation`, invitation: await this.invitations.readOne({ _id }) }
+  async declineGroupRequest(_id: ObjectId, recipient: ObjectId) {
+    await this.assertUserIsRequestRecipient(_id, recipient);
+    await this.requests.partialUpdateOne({ _id }, { status: "declined" });
+    return { msg: `Declined group request`, request: await this.requests.readOne({ _id }) }
   }
 
-  async getInvitationById(_id: ObjectId) {
-   return await this.assertInvitationExists(_id);
+  async getRequestById(_id: ObjectId) {
+   return await this.assertRequestExists(_id);
   }
 
-  async getInvitationsByRecipient(recipient: ObjectId) {
-    return await this.invitations.readMany({ recipient });
+  async getRequestsByRecipient(recipient: ObjectId) {
+    return await this.requests.readMany({ recipient });
   }
 
-  async getInvitationsByGroup(group: ObjectId) {
-    return await this.invitations.readMany({ group });
+  async getRequestsByGroup(group: ObjectId) {
+    return await this.requests.readMany({ group });
   }
 
   async create(name: string, rules: string, organizer: ObjectId) {
@@ -175,25 +175,25 @@ export default class GroupingConcept {
     }
   }
 
-  async assertInvitationExists(_id: ObjectId) {
-    const invitation = await this.invitations.readOne({ _id });
-    if (!invitation) {
-      throw new NotAllowedError(`Invitation doesn't exist!`);
+  async assertRequestExists(_id: ObjectId) {
+    const request = await this.requests.readOne({ _id });
+    if (!request) {
+      throw new NotAllowedError(`Request doesn't exist!`);
     }
-    return invitation;
+    return request;
   }
 
-  async assertNewInvitation(group: ObjectId, recipient: ObjectId) {
-    const invitation = await this.invitations.readOne({ group, recipient });
-    if (invitation) {
-      throw new AlreadyExistsError(`User has already been invited to the group!`);
+  async assertNewRequest(group: ObjectId, sender: ObjectId, recipient: ObjectId) {
+    const request = await this.requests.readOne({ group, sender, recipient, status: "pending" });
+    if (request) {
+      throw new AlreadyExistsError(`Request has already been made!`);
     }
   }
 
-  async assertUserIsInviteRecipient(_id: ObjectId, user: ObjectId) {
-    const invitation = await this.assertInvitationExists(_id)
-    if (invitation.recipient.toString() !== user.toString()) {
-      throw new NotAllowedError(`User ${user} is not the recipient of invitation ${_id}!`);
+  async assertUserIsRequestRecipient(_id: ObjectId, user: ObjectId) {
+    const request = await this.assertRequestExists(_id)
+    if (request.recipient.toString() !== user.toString()) {
+      throw new NotAllowedError(`User ${user} is not the recipient of request ${_id}!`);
     }
   }
 }

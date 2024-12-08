@@ -1,75 +1,45 @@
 <script setup lang="ts">
 import { useUserStore } from "@/stores/user";
-import { computed, defineEmits, watch, ref, onMounted } from "vue";
-import { useGroupStore } from "@/stores/group";
-import { storeToRefs } from "pinia";
-import StyledButton from "@/components/Useful/StyledButton.vue";
+import { defineEmits, defineProps } from "vue";
 
-const emit = defineEmits(["selected-group", "create", "join"]);
+const props = defineProps(["groups"])
+const emit = defineEmits(["selected-group"]);
+
 const userStore = useUserStore();
-const groupStore = useGroupStore();
-const { allGroups } = storeToRefs(groupStore);
 
-const displayGroups = computed(() => {
-  return allGroups.value.filter((group) => {
-    return group.members.some((member) => member.toString() === userStore.currentUserId.toString())
-  })
-})
-
-const select = (group: string) => {
-  emit("selected-group", group);
+const select = (groupId: string, organizer: string) => {
+  emit("selected-group", groupId, organizer);
 };
-
-const create = () => emit("create")
-
-const join = () => emit("join")
 </script>
 
 <template>
-  <div class="group-list-container">
-    <h2>
-      Groups
-      {{ userStore.role === 'member' ? "(Member view)" : "(Organizer view)" }}
-    </h2>
-    <div class="group-list">
-      <div
-        v-if="displayGroups.length > 0"
-        v-for="group in displayGroups"
-        :key="group._id.toString()"
-        class="group-item"
-        @click="select(group._id.toString())"
-        :class="{
-          organizer: group.organizer.toString() === userStore.currentUserId.toString(),
-          member: group.organizer.toString() !== userStore.currentUserId.toString() }"
-      >
-        <span class="group-name">{{ group.name }}</span>
-      </div>
-      <div v-else>
-        <p class="opaque">You have no groups to display</p>
-      </div>
+  <div class="group-list">
+    <div
+      v-if="props.groups.length > 0"
+      v-for="group in props.groups"
+      :key="group._id.toString()"
+      class="group-item"
+      @click="select(group._id.toString(), group.organizer.toString())"
+      :class="{
+        organizer: group.organizer.toString() === userStore.currentUserId.toString(),
+        member: group.organizer.toString() !== userStore.currentUserId.toString() }"
+    >
+      <span class="group-name">{{ group.name }}</span>
     </div>
-    <StyledButton v-if="userStore.role == 'organizer'" :on-click="create">
-      Create a new group
-    </StyledButton>
-    <StyledButton v-else :on-click="join">
-      Discover groups
-    </StyledButton>
+    <div v-else>
+      <p class="opaque">No groups to display.</p>
+    </div>
   </div>
 </template>
 
 <style scoped>
-
-.group-list-container {
-  text-align: center;
-  padding: 2em;
-}
-
 .group-list {
   display: flex;
   justify-content: center;
   gap: 2em;
   flex-wrap: wrap;
   margin: 2em 0;
+  padding: 1em;
 }
 
 .group-item {

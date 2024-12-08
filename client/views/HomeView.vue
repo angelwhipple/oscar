@@ -21,14 +21,13 @@ onMounted(async () => {
 
 <template>
   <main>
-    <h1>Home Page</h1>
-    <section>
-      <h1 v-if="isLoggedIn">Welcome {{ currentUsername }}!</h1>
-      <h1 v-else>Please login!</h1>
-    </section>
     <section v-if="isLoggedIn">
       <PermissionForm v-if="isNewMember" @selected-permissions="refreshIsNewMember" />
       <GroupView v-else />
+    </section>
+    <section v-else>
+      <h1>Home Page</h1>
+      <h1>Please login!</h1>
     </section>
   </main>
 </template>

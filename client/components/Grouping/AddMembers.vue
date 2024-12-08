@@ -1,15 +1,19 @@
 <script setup lang="ts">
 import { useGroupStore } from "@/stores/group";
-import { defineEmits, defineProps, ref } from "vue";
+import { defineProps, ref } from "vue";
+import { useUserStore } from "@/stores/user";
+import { UserDoc } from "../../../server/concepts/authenticating";
 
 const props = defineProps(["groupId"]);
 const groupStore = useGroupStore();
+const userStore = useUserStore();
 
 const newMember = ref("");
 
 const inviteMember = async () => {
   if (!props.groupId) return
-  await groupStore.sendGroupInvitation(props.groupId, newMember.value);
+  const member: UserDoc = await userStore.fetchUserByUsername(newMember.value);
+  await groupStore.sendGroupRequest(props.groupId, userStore.currentUserId, member._id.toString(), "invite");
   newMember.value = ""
 };
 </script>

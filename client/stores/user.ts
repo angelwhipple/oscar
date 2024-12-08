@@ -27,6 +27,10 @@ export const useUserStore = defineStore(
       return await fetchy(`/api/users/id/${id}`, "GET", { alert: false });
     }
 
+    const fetchUserByUsername = async (username: string) => {
+      return await fetchy(`/api/users/${username}`, "GET", { alert: false });
+    }
+
     const loginUser = async (username: string, password: string) => {
       await fetchy("/api/login", "POST", {
         body: { username, password },
@@ -97,6 +101,7 @@ export const useUserStore = defineStore(
       createUser,
       loginUser,
       fetchUser,
+      fetchUserByUsername,
       updateSession,
       logoutUser,
       updateUserUsername,

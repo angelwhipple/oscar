@@ -120,7 +120,7 @@ const generateLotteryWinner = () => {
 <template>
   <body class="page">
   <div class="manage-group-container">
-    <h3 class="group-title">Name of Group: {{ group?.name }}</h3>
+    <h3 class="group-title">{{ group?.name }}</h3>
 
     <div class="layout">
       <!-- Left Section -->
@@ -129,19 +129,8 @@ const generateLotteryWinner = () => {
         <ul class="member-list">
           <li v-for="username in memberUsernames" :key="username" class="member-item">
             <span>{{ username }}</span>
-<!--            <div class="member-actions">-->
-<!--              <button class="small-button">+</button>-->
-<!--              <button class="small-button">-</button>-->
-<!--            </div>-->
           </li>
         </ul>
-
-<!--         <div class="reminder-section"> -->
-<!--            <h4>Create Custom Reminder</h4>-->
-<!--            <input type="text" placeholder="Enter Message" class="input-field" />-->
-<!--            <button class="action-button">Send to All</button>-->
-<!--         </div> -->
-
         <div class="sos-section">
           <NotifyingButton />
         </div>

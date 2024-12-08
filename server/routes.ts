@@ -304,44 +304,44 @@ class Routes {
     return await Grouping.disband(oid, user);
   }
 
-  @Router.post("/groups/invitations/:id")
-  async invite(session: SessionDoc, id: string, recipient: string) {
-    const organizerId = Sessioning.getUser(session);
+  @Router.post("/groups/requests/:id")
+  async request(session: SessionDoc, id: string, sender: string, recipient: string, type: string) {
     const groupId = new ObjectId(id);
-    const recipientId = (await Authing.getUserByUsername(recipient))._id;
-    return await Grouping.sendGroupInvitation(groupId, organizerId, recipientId);
+    const senderId = new ObjectId(sender);
+    const recipientId = new ObjectId(recipient);
+    return await Grouping.sendGroupRequest(groupId, senderId, recipientId, type);
   }
 
-  @Router.get("/groups/invitations/:id")
-  async fetchInvitation(id: string) {
+  @Router.get("/groups/requests/:id")
+  async fetchRequest(id: string) {
     const oid = new ObjectId(id);
-    return await Grouping.getInvitationById(oid);
+    return await Grouping.getRequestById(oid);
   }
 
-  @Router.get("/groups/invitations/user/:id")
-  async getUserInvitations(session: SessionDoc, id: string) {
+  @Router.get("/groups/requests/user/:id")
+  async getUserRequests(session: SessionDoc, id: string) {
     const user = new ObjectId(id);
-    return await Grouping.getInvitationsByRecipient(user);
+    return await Grouping.getRequestsByRecipient(user);
   }
 
-  @Router.get("/groups/invitations/group/:id")
-  async getGroupInvitations(session: SessionDoc, id: string) {
+  @Router.get("/groups/requests/group/:id")
+  async getGroupRequests(session: SessionDoc, id: string) {
     const oid = new ObjectId(id);
-    return await Grouping.getInvitationsByGroup(oid);
+    return await Grouping.getRequestsByGroup(oid);
   }
 
-  @Router.patch("/groups/invitations/accept/:id")
-  async acceptInvitation(session: SessionDoc, id: string) {
+  @Router.patch("/groups/requests/accept/:id")
+  async acceptRequest(session: SessionDoc, id: string, type: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    return await Grouping.acceptGroupInvitation(oid, user)
+    return await Grouping.acceptGroupRequest(oid, user, type)
   }
 
-  @Router.patch("/groups/invitations/decline/:id")
-  async declineInvitation(session: SessionDoc, id: string) {
+  @Router.patch("/groups/requests/decline/:id")
+  async declineRequests(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
     const oid = new ObjectId(id);
-    return await Grouping.declineGroupInvitation(oid, user)
+    return await Grouping.declineGroupRequest(oid, user)
   }
 
   /**
