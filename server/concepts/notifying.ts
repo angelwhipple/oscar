@@ -22,7 +22,7 @@ export default class NotifyingConcept {
 
   async createNotification(s: ObjectId, r: ObjectId[], content: string, type: ActionItem) {
     const _id = await this.notifications.createOne({ message: content, sender: s, recipients: r, action: type });
-    return { msg: "Member successfully created!", member: await this.notifications.readOne({ _id }) };
+    return { msg: "Successfully sent notification!", member: await this.notifications.readOne({ _id }) };
   }
 
   async getNotifications(user: ObjectId) {

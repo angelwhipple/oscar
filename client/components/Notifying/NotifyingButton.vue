@@ -19,23 +19,15 @@ async function getGroupMembers() {
   //angel will fix with groupStore
 }
 
-const reminderAction = () => {
-  actionType.value = "Reminder";
-};
+const setActionType = (type: string) => {
+  actionType.value = type;
+}
 
-const SOSAction = () => {
-  actionType.value = "SOS";
-};
-
-const PaymentAction = () => {
-  actionType.value = "Payment";
-};
-
-//changing no
 async function createNotif() {
   try {
     await fetchy(`/api/notifying`, "POST",
       { body: { recipients: invitees.value, message: notification.value, action: actionType.value } });
+    setActionType("");
   } catch (e) {
     console.error(`Error creating notification: ${e}`);
   }
@@ -43,29 +35,19 @@ async function createNotif() {
 }
 </script>
 
-<!-- need to redesign layout to include more information about the type of notification... -->
-<!-- include v-if's for different type -->
-
 <template>
   <div class="fetch-groups-container">
-    <h2>Create a Group Notification</h2>
+    <h2>Send a Group Notification</h2>
     <form @submit.prevent="createNotif" class="fetch-groups-form">
       <div class="form-actions">
-        <button type="button" class="action-button" @click.prevent="reminderAction">Reminder</button>
-        <button type="button" class="action-button" @click.prevent="SOSAction">SOS</button>
-        <button type="button" class="action-button" @click.prevent="PaymentAction">Payment</button>
+        <button type="button" class="action-button" @click="setActionType('Payment')">Payment Reminder</button>
+        <button type="button" class="action-button" @click="setActionType('SOS')">SOS</button>
       </div>
-      <div v-if="actionType === 'Reminder'">
-        <input class="input-field" v-model="notification" type="text" placeholder="Write Reminder Message" />
-        <button type="submit" class="fetch-button">Send Reminder</button>
-      </div>
-      <div v-if="actionType === 'SOS'">
-        <input class="input-field" v-model="notification" type="text" placeholder="Write SOS Message" />
-        <button type="submit" id="sos-button">Send SOS</button>
-      </div>
-      <div v-if="actionType === 'Payment'">
-        <input class="input-field" v-model="notification" type="text" placeholder="Submit Payment" />
-        <button type="submit" class="fetch-button">Send Payment</button>
+      <input v-if="actionType" class="input-field" v-model="notification" type="text" placeholder="Write a message" />
+      <div class="action-container">
+        <button v-if="actionType" @click="setActionType('')" class="fetch-button">Cancel</button>
+        <button v-if="actionType === 'Payment'" type="submit" class="fetch-button">Send Reminder</button>
+        <button v-else-if="actionType === 'SOS'" type="submit" id="sos-button">Send SOS</button>
       </div>
     </form>
   </div>
@@ -80,17 +62,13 @@ async function createNotif() {
   border-radius: 12px;
   background-color: #ffffff;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-wrap: nowrap;
 }
 
 .fetch-groups-form {
   display: flex;
   flex-direction: column;
   gap: 1.5em;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
 }
 
 .input-field {
@@ -152,5 +130,10 @@ async function createNotif() {
 
 .fetch-button:hover {
   background-color: #0056b3;
+}
+
+.action-container {
+  display: flex;
+  justify-content: space-between;
 }
 </style>

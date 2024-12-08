@@ -87,7 +87,6 @@ export const useUserStore = defineStore(
 
     const refreshRole = async () => {
       role.value = await fetchy("/api/permissions", "GET", { alert: false });
-      console.log(`Set role : ${role.value}`);
     }
 
     const checkNewMember = async (id: string) => {
