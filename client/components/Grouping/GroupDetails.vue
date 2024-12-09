@@ -2,7 +2,7 @@
 import { useGroupStore } from "@/stores/group";
 import { useUserStore } from "@/stores/user";
 import { fetchy } from "@/utils/fetchy";
-import { defineEmits, defineProps, ref } from "vue";
+import { defineEmits, defineProps, ref, onMounted, watch } from "vue";
 import StyledButton from "@/components/Useful/StyledButton.vue";
 import NotifyingButton from "../Notifying/NotifyingButton.vue";
 import AddMember from "./AddMembers.vue";
@@ -13,18 +13,15 @@ const userStore = useUserStore();
 const groupStore = useGroupStore();
 
 const renameGroupName = ref("");
-const contributionAmount = ref("");
-const withdrawalAmount = ref("");
-
-const draftedMembers = ref<string[]>([]);
-const lotteryWinner = ref<string | null>(null);
-
-const memberUsernames = ref<string[]>([]); //to hold user names of members
-
-import { onMounted, watch } from "vue";
-
+const contributionAmount = ref(0);
+const withdrawalAmount = ref(0);
 const balance = ref(0);
 const amountPerContribution = ref(0);
+const isViewingLottery = ref(false);
+
+const ineligibleMembers = ref<string[]>([]);
+const lotteryWinner = ref<string | null>(null);
+const memberUsernames = ref<string[]>([]);
 
 const fetchBalance = async () => {
   if (!props.group) return;
@@ -43,19 +40,14 @@ const fetchMemberUsernames = async () => {
   );
 };
 
-// Fetch balance on component load
 onMounted(() => {
   fetchBalance();
   fetchMemberUsernames();
 });
 
-// Watch for updates to the group and refetch balance
-watch(
-  () => props.group,
-  () => {
+watch(props.group, () => {
     fetchBalance();
-  },
-);
+});
 
 const renameGroup = async () => {
   if (!props.group) return;
@@ -66,15 +58,15 @@ const renameGroup = async () => {
 const contribute = async () => {
   if (!props.group) return;
   await groupStore.makeContribution(props.group._id, contributionAmount.value);
-  contributionAmount.value = "";
+  contributionAmount.value = 0;
   await fetchBalance();
 };
 
 const withdraw = async () => {
   if (!props.group) return;
   await groupStore.makeWithdrawal(props.group._id, withdrawalAmount.value);
-  withdrawalAmount.value = "";
-  await fetchBalance(); // Update balance
+  withdrawalAmount.value = 0;
+  await fetchBalance();
 };
 
 const clearSelectedGroup = () => {
@@ -103,22 +95,53 @@ const decrementBalance = async () => {
 };
 
 const generateLotteryWinner = () => {
-  const eligibleMembers = memberUsernames.value.filter((username) => !draftedMembers.value.includes(username));
-
-  if (eligibleMembers.length === 0) {
-    draftedMembers.value = [];
+  const eligibleMembers = memberUsernames.value.filter((username) => !ineligibleMembers.value.includes(username));
+  if (!eligibleMembers) {
     lotteryWinner.value = null;
     return;
   }
-
-  const winner = eligibleMembers[Math.floor(Math.random() * eligibleMembers.length)];
-  draftedMembers.value.push(winner);
-  lotteryWinner.value = winner;
+  lotteryWinner.value = eligibleMembers[Math.floor(Math.random() * eligibleMembers.length)];
+  isViewingLottery.value = true;
 };
+
+const disbursePotToWinner = async () => {
+  ineligibleMembers.value.push(lotteryWinner.value!);
+  withdrawalAmount.value = balance.value;
+  await withdraw();
+  isViewingLottery.value = false;
+  lotteryWinner.value = null;
+}
+
+const endLottery = () => {
+  lotteryWinner.value = null;
+  isViewingLottery.value = false;
+}
+
+const restartCycle = () => {
+  ineligibleMembers.value = []
+  isViewingLottery.value = false;
+}
 </script>
 
 <template>
   <body class="page">
+  <section v-if="isViewingLottery" class="modal centered">
+    <div class="content">
+      <p v-if="lotteryWinner"><strong class="winner">{{ lotteryWinner }}</strong> wins the ROSCA pot this round.</p>
+      <p v-else>Everyone has received the pot this cycle. Restart ROSCA?</p>
+      <div class="bottom-actions">
+        <StyledButton :on-click="endLottery">
+          Cancel
+        </StyledButton>
+        <StyledButton v-if="lotteryWinner" :on-click="disbursePotToWinner">
+          Disburse winnings
+        </StyledButton>
+        <StyledButton v-else :on-click="restartCycle">
+          New cycle
+        </StyledButton>
+      </div>
+    </div>
+  </section>
   <div class="manage-group-container">
     <h3 class="group-title">{{ group?.name }}</h3>
 
@@ -149,10 +172,6 @@ const generateLotteryWinner = () => {
       <!-- Right Section -->
       <div class="right-section">
         <button class="action-button" @click="generateLotteryWinner">Generate Lottery Winner</button>
-        <p v-if="lotteryWinner">
-          <strong class="winner">{{ lotteryWinner }} </strong> is the winner!
-        </p>
-
         <div class="deadline-section">
           <h4>Deadline for Next Contribution</h4>
           <p>Dec 27, 2024</p>
@@ -168,12 +187,12 @@ const generateLotteryWinner = () => {
     <div class="bottom-actions">
       <form @submit.prevent="contribute" class="inline-form">
         <button type="submit" class="action-button contribute-button">Contribute to Pot</button>
-        <input type="number" v-model="contributionAmount" required placeholder="Enter Amount of Money" class="input-field" />
+        <input type="number" v-model="contributionAmount" required placeholder="Enter $ amount" min="1" class="input-field" />
       </form>
 
       <form @submit.prevent="withdraw" class="inline-form">
         <button type="submit" class="action-button withdraw-button">Remove from Pot</button>
-        <input type="number" v-model="withdrawalAmount" required placeholder="Enter Amount of Money" class="input-field" />
+        <input type="number" v-model="withdrawalAmount" required placeholder="Enter $ amount" min="1" class="input-field" />
       </form>
 
       <StyledButton :on-click="clearSelectedGroup">Back</StyledButton>
@@ -317,21 +336,21 @@ const generateLotteryWinner = () => {
   background-color: #ffffff;
 }
 
-.small-button {
-  padding: 5px 10px;
-  border: none;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  background-color: #ccc;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-}
-
-.small-button:hover {
-  background-color: #aaa;
-}
-
 .winner {
   color: #27ae60;
+}
+
+.modal .content {
+  position: absolute;
+  background-color: white;
+  width: 40%;
+  height: 40%;
+  animation: fadeIn 0.3s;
+  border-radius: 1em;
+  overflow-y: scroll;
+}
+
+.modal .content::-webkit-scrollbar {
+  display: none;
 }
 </style>

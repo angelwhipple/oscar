@@ -269,34 +269,6 @@ class Routes {
     return await Grouping.getGroupById(oid);
   }
 
-  @Router.get("/groups/transactions/:id")
-  async getGroupTransactions(session: SessionDoc, id: string) {
-    const oid = new ObjectId(id);
-    return await Grouping.getGroupTransactions(oid);
-  }
-
-  @Router.get("/users/transactions/:id")
-  async getUserTransactions(session: SessionDoc, id: string) {
-    const oid = new ObjectId(id);
-    return await Grouping.getGroupTransactions(oid);
-  }
-
-  @Router.patch("/groups/transactions/contribute/:id")
-  async makeContribution(session: SessionDoc, id: string, amount: string) {
-    const user = Sessioning.getUser(session);
-    const group = new ObjectId(id);
-    await Grouping.assertUserIsMember(group, user);
-    return await Accounting.deposit(group, user, Number(amount));
-  }
-
-  @Router.patch("/groups/transactions/withdraw/:id")
-  async makeWithdrawal(session: SessionDoc, id: string, amount: string) {
-    const user = Sessioning.getUser(session);
-    const group = new ObjectId(id);
-    await Grouping.assertUserIsMember(group, user);
-    return await Accounting.withdraw(group, user, Number(amount));
-  }
-
   @Router.delete("/groups/:id")
   async disbandGroup(session: SessionDoc, id: string) {
     const user = Sessioning.getUser(session);
@@ -352,6 +324,34 @@ class Routes {
   async getGroupBalance(session: SessionDoc, id: string) {
     const group = new ObjectId(id);
     return await Accounting.getAccountBalance(group);
+  }
+
+  @Router.get("/groups/transactions/:id")
+  async getGroupTransactions(session: SessionDoc, id: string) {
+    const oid = new ObjectId(id);
+    return await Grouping.getGroupTransactions(oid);
+  }
+
+  @Router.get("/users/transactions/:id")
+  async getUserTransactions(session: SessionDoc, id: string) {
+    const oid = new ObjectId(id);
+    return await Grouping.getGroupTransactions(oid);
+  }
+
+  @Router.patch("/groups/transactions/contribute/:id")
+  async makeContribution(session: SessionDoc, id: string, amount: number) {
+    const user = Sessioning.getUser(session);
+    const group = new ObjectId(id);
+    await Grouping.assertUserIsMember(group, user);
+    return await Accounting.deposit(group, user, Number(amount));
+  }
+
+  @Router.patch("/groups/transactions/withdraw/:id")
+  async makeWithdrawal(session: SessionDoc, id: string, amount: number) {
+    const user = Sessioning.getUser(session);
+    const group = new ObjectId(id);
+    await Grouping.assertUserIsMember(group, user);
+    return await Accounting.withdraw(group, user, Number(amount));
   }
 
   /**

@@ -28,7 +28,7 @@ onMounted(refreshGroups);
 
 <template>
   <div class="sidebar">
-    <h2>Select Group</h2>
+    <h2>Conversations</h2>
     <div class="group-container">
       <div class="group-block" v-for="group in groups" :key="group._id.toString()" @click="selectGroup(group._id.toString())" :class="{ selected: group._id.toString() === selectedGroup }">
         {{ group.name }}

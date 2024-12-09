@@ -53,13 +53,13 @@ export const useGroupStore = defineStore(
 
     const disbandGroup = async () => {}
 
-    const makeContribution = async (groupId: string, amount: string) => {
+    const makeContribution = async (groupId: string, amount: number) => {
       return await fetchy(`/api/groups/transactions/contribute/${groupId}`, "PATCH",
         { body: { amount }, alert: true }
       );
     }
 
-    const makeWithdrawal = async (groupId: string, amount: string) => {
+    const makeWithdrawal = async (groupId: string, amount: number) => {
       try {
         return await fetchy(`/api/groups/transactions/withdraw/${groupId}`, "PATCH",
           { body: { amount }, alert: true }
