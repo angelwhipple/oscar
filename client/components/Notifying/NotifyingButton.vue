@@ -43,7 +43,7 @@ async function createNotif() {
         <button type="button" class="action-button" @click="setActionType('Payment')">Payment Reminder</button>
         <button type="button" class="action-button" @click="setActionType('SOS')">SOS</button>
       </div>
-      <input v-if="actionType" class="input-field" v-model="notification" type="text" placeholder="Write a message" />
+      <input v-if="actionType" class="input-field" v-model="notification" type="text" placeholder="Express your financial emergency" />
       <div class="action-container">
         <button v-if="actionType" @click="setActionType('')" class="fetch-button">Cancel</button>
         <button v-if="actionType === 'Payment'" type="submit" class="fetch-button">Send Reminder</button>

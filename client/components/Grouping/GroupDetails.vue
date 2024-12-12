@@ -171,7 +171,7 @@ const restartCycle = () => {
 
       <!-- Right Section -->
       <div class="right-section">
-        <button class="action-button" @click="generateLotteryWinner">Generate Lottery Winner</button>
+        <button v-if="userStore.currentUserId === props.group.organizer" class="action-button" @click="generateLotteryWinner">Issue Payout</button>
         <div class="deadline-section">
           <h4>Deadline for Next Contribution</h4>
           <p>Dec 27, 2024</p>
